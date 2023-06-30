@@ -21,7 +21,7 @@ class AI(Player_interface):
         # vs picking moves it already knows. See should_explore() for more info
 
         self.always_explore = False
-        self.exploration_rate = 1
+        self.exploration_rate = 0
 
         if self.always_explore: print("WARNING: AI is in pure learning mode (trying new moves whenever possible)")
         if self.exploration_rate == 0 and not self.always_explore: print("WARNING: AI's exploration rate is set to 0 (never trying new moves)")

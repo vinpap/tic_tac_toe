@@ -9,7 +9,7 @@ from graphics import Graphics
 # If this value is set to False, you play against the AI
 # If it is set to True, the AI plays agains itself. In that case, the data from
 # both players is used to train the model.
-both_players_are_AI = True
+both_players_are_AI = False
 
 # Only usable if both_players_are_AI is set to True
 no_display = False
