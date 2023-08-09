@@ -15,13 +15,26 @@ class Testing_AI(Player_interface):
         self.is_AI = True
         self.strategy = None
 
-    def play(self, current_state):
+    def play(self, current_state: np.array) -> np.array:
+        """
+        Selects the based move given the state of the board given by current_state.
 
+        given_state: 2D numpy array that contains the current state of the board.
+        Each box on the board is given a value:
+        1: this player already checked this box
+        -1: the opponent checked this box
+        0: no one has checked this box yet.
+
+        Returns the new state of the board after the AI played as a numpy array.  
+        """
         
+        # Finds out if it is possible to win during this turn
         instant_win = self.__check_instant_wins(current_state)
         if type(instant_win) == np.array:
             return instant_win
         
+        # Finds out if the opponent is about to win. If so, the
+        # AI plays in such a way to prevent it.
         instant_loss = self.__check_instant_loss(current_state)
         if type(instant_loss) == np.array:
             return instant_loss
@@ -29,35 +42,20 @@ class Testing_AI(Player_interface):
         # We find out how many moves have been made so far
         # (necessary to decide our move)
         moves_count = np.count_nonzero(current_state)
-        # SI ON COMMENCE :
-        # Jouer dans un coin
+        
+        # If we are starting, we play in a corner (best first move)
         if moves_count == 0:
             current_state[0, 0] = 1
             return current_state
         
+        # A strategy needs to be picked at turn 1 or 2, depending on the board.
         if moves_count in (1, 2) and not self.strategy:
             self.strategy = self.__pick_strategy(current_state, moves_count)
-        print(self.strategy)
         move = self.__follow_strategy(current_state, moves_count)
         return move
 
-        # Si l'adversaire joue au milieu :
-        # Continuer à jouer. À chaque tour :
-        # Faire un alignement de 3 si possible.
-        # Si pas possible, bloquer un alignement de 3 de l'adversaire
-        # Si pas possible, faire un alignement de 2 qui pourrait permettre une victoire au tour suivant
-        # Si pas possible, faire un alignement de 2 quelconque
 
-        # Sinon :
-        # Jouer au centre
-
-        # Si on peut finir la diagonale : 
-        # FInir la diagonale, on a gagné
-        # SInon :
-        # Si l'adversaire va faire un alignement de 3, on le neutralise
-
-
-    def __pick_strategy(self, board, turn):
+    def __pick_strategy(self, board: np.array, turn: int) -> np.array:
         """
         Used on the testing AI's second move in order to pick an optimal
         strategy based on the current state of the board.
@@ -91,7 +89,7 @@ class Testing_AI(Player_interface):
         else:
             return "SECOND_opponent_played_side"
 
-    def __follow_strategy(self, board, turn_count):
+    def __follow_strategy(self, board: np.array, turn_count: int) -> np.array:
         """
         Returns the move advised by the current strategy.
         """
@@ -112,7 +110,7 @@ class Testing_AI(Player_interface):
             case _:
                 raise ValueError("Invalid strategy name for the testing AI")
             
-    def __first_opponent_played_center(self, board, turn):
+    def __first_opponent_played_center(self, board: np.array, turn: int) -> np.array:
         """
         Covers the case where the testing AI started and the opponent reacted
         by playing in the center box.
@@ -137,7 +135,7 @@ class Testing_AI(Player_interface):
         return board
         
     
-    def __first_center_is_free(self, board, turn):
+    def __first_center_is_free(self, board: np.array, turn: int) -> np.array:
         """
         Covers the case where the testing AI started and the opponent did not
         play in the center box in reaction.
@@ -176,7 +174,7 @@ class Testing_AI(Player_interface):
 
         return board
     
-    def __second_opponent_played_center(self, board, turn):
+    def __second_opponent_played_center(self, board: np.array, turn: int) -> np.array:
         """
         Covers the case where the AI played in second and the opponent started
         with playing in the middle
@@ -188,7 +186,7 @@ class Testing_AI(Player_interface):
 
         return board
     
-    def __second_opponent_played_corner(self, board, turn):
+    def __second_opponent_played_corner(self, board: np.array, turn: int) -> np.array:
         """
         Covers the case where the AI played in second and the opponent started
         with playing in a corner
@@ -216,7 +214,7 @@ class Testing_AI(Player_interface):
             self.strategy = "block_opponent"
         return board
     
-    def __second_opponent_played_side(self, board, turn):
+    def __second_opponent_played_side(self, board: np.array, turn: int) -> np.array:
         
         if turn == 1:
             board[1, 1] = 1
@@ -237,7 +235,7 @@ class Testing_AI(Player_interface):
 
         return board
     
-    def __check_instant_wins(self, board):
+    def __check_instant_wins(self, board: np.array):
         """
         Checks if there is a way to win immediately.
         """
@@ -275,7 +273,7 @@ class Testing_AI(Player_interface):
         else: 
             return False
     
-    def __check_instant_loss(self, board):
+    def __check_instant_loss(self, board: np.array):
 
         row_sums = np.sum(board, axis=1)
         col_sums = np.sum(board, axis=0)
@@ -316,7 +314,7 @@ class Testing_AI(Player_interface):
         return False
 
     
-    def __block_opponent(self, board):
+    def __block_opponent(self, board: np.array) -> np.array:
         """
         Plays in a way that prevents the opponent from winning when it
         has become impossible for the AI itself to win (except if there 
@@ -359,16 +357,14 @@ class Testing_AI(Player_interface):
         # the AI plays randomly (it cannot win anymore anyway)
         
         else:
-            print("CHECK")
             for idx_row, row in enumerate(board):
                 for idx_col, value in enumerate(row):
-                    print(value)
                     if value == 0:
                         board[idx_row, idx_col] = 1
                         return board
         return board
 
-    def notify_game_result(self, result):
+    def notify_game_result(self, result) -> None:
         # Emptying the list of winning moves (if any) for the next game
         self.next_winning_moves = []
         self.strategy = None

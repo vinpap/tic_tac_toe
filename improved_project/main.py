@@ -44,7 +44,7 @@ else:
 
 # This is the main loop. It will keep starting new games until you close the
 # game window. The tuple inside brackets is the shape of the board
-games_count = 500
+games_count = 100000
 games_played = 0
 t1 = time()
 while game_system.play_a_game((3, 3)) and games_played < games_count-1:
