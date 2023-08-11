@@ -24,6 +24,10 @@ class Game_system_interface(ABC):
         """Asks the game system to start playing a new game"""
         return
 
+    def reset_games_counter(self):
+        self.player_1_scores = {"WINS": 0, "LOSSES": 0, "DRAWS": 0}
+        self.player_2_scores = {"WINS": 0, "LOSSES": 0, "DRAWS": 0}
+
 
 class Graphics_interface(ABC):
     @abstractmethod

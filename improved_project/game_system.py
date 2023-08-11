@@ -87,10 +87,6 @@ class Game_system(Game_system_interface):
                     )
                 self.player_1.notify_game_result(0)
                 self.player_2.notify_game_result(1)
-        print("PLAYER 1:")
-        print(self.player_1_scores)
-        print("PLAYER 2:")
-        print(self.player_2_scores)
         return True
 
     def play_one_move(self):

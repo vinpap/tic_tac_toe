@@ -233,6 +233,9 @@ class Testing_AI(Player_interface):
             else:
                 board[0, 2] = 1
 
+        else:
+            board = self.__block_opponent(board)
+
         return board
     
     def __check_instant_wins(self, board: np.array):

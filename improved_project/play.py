@@ -4,6 +4,7 @@ from time import time
 
 from ai import AI
 from testing_ai import Testing_AI
+from random_ai import Random_AI
 from game_system import Game_system
 from human_player import Human_player
 from graphics import Graphics
@@ -22,13 +23,13 @@ if no_display and not both_players_are_AI:
 if both_players_are_AI:
     player_1 = AI()
     if test_ai:
-        player_2 = Testing_AI()
+        player_2 = Random_AI()
     else:
         player_2 = AI()
 else:
     player_1 = Human_player()
     if test_ai:
-        player_2 = Testing_AI()
+        player_2 = Random_AI()
     else:  
         player_2 = AI()
 
@@ -44,7 +45,7 @@ else:
 
 # This is the main loop. It will keep starting new games until you close the
 # game window. The tuple inside brackets is the shape of the board
-games_count = 100000
+games_count = 2000
 games_played = 0
 t1 = time()
 while game_system.play_a_game((3, 3)) and games_played < games_count-1:
