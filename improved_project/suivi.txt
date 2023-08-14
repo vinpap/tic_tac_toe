@@ -1,0 +1,7 @@
+INFOS NOTÉES AU FIL DU PROJET QUI PEUVENT POTENTIELLEMENT APPARAÎTRE DANS LE RAPPORT
+
+- Séparation en deux dossiers : original_project et improved_project
+- Codage de la baseline : Random_AI (un modèle qui joue parfaitement a été considéré auparavant, mais jugé inutilement compliqué, à vérifier avec Gautier et/ou les formateurs.)
+- Ajout de tests unitaires. Pour tout le code ajouté, travail selon une méthode de TDD : test-driven development, on fait les tests avant de coder.
+- Liste de modèles à tester choisie : Monte Carlo, Q-learning, SARSA
+
