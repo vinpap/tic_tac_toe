@@ -8,7 +8,7 @@ from time import time
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from ai import AI
+from original_ai import Original_AI
 from random_ai import Random_AI
 from game_system import Game_system
 from human_player import Human_player
@@ -23,8 +23,8 @@ def plot_results(results: pd.DataFrame):
 
 def train_model():
 
-    player_1 = AI()
-    player_2 = AI()
+    player_1 = Original_AI()
+    player_2 = Original_AI()
     player_3 = Random_AI()
 
     no_display = False
@@ -48,21 +48,30 @@ def train_model():
     with open("training.json", 'w') as _:
         pass
 
-    games_count = 10000
+    games_count = 20000
     games_played = 0
     starting_time = time()
     total_time = 0
 
-    # This is the main loop. It will keep starting new games until you close the
-    # game window. The tuple inside brackets is the shape of the board
+    # This is the main loop. It will keep playing new games until you close the
+    # game window. The tuple inside brackets is the shape of the board.
+    # In order to train the model, we keep following this cycle:
+    # - first the AI plays 500 training games against itself and updates its
+    # training data accordingly
+    # - Then it plays 100 games against the baseline AI. The score obtained
+    # over these 100 games is then saved.
     while training_game_system.play_a_game((3, 3)) and games_played < games_count:
         games_played += 1
         if games_played % 500 == 0:
+
             print(f"Training games played: {games_played}")
-            # Every 500 games, we play 100 test games while setting the exploration rate to
-            # 0 in order to maximize the chances of success
+            # Updating the training time
             total_time = total_time + (time() - starting_time)
             results["training_time"].append(total_time)
+
+            # Playing 100 games against the baseline model
+            # During the tests, the exploration rate is set to 0 so the AI always prioritizes
+            # the best known move.
             player_1.exploration_rate = 0
             test_game_system.reset_games_counter()
             for i in range(100):

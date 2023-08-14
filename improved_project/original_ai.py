@@ -1,4 +1,9 @@
-"""Inherits from Player_interface, defines the behaviour of the AI player"""
+"""
+This is the AI model originally coded for this project, back in time. 
+It is a hand-coded model-free reinforcement model that we want to replace
+with a better one in this project.
+Inherits from Player_interface, defines the behaviour of the AI player.
+"""
 
 import random
 import json
@@ -8,7 +13,7 @@ import numpy as np
 from interfaces import Player_interface
 
 
-class AI(Player_interface):
+class Original_AI(Player_interface):
     def __init__(self):
         self.is_AI = True
 
@@ -148,12 +153,16 @@ class AI(Player_interface):
         """The training data is stored in a JSON file"""
         training_data = []
 
-        with open("training.json", "r+", newline="") as json_file:
-            try:
-                json_data = json.load(json_file)
+        try:
+            with open("training.json", "r+", newline="") as json_file:
+                try:
+                    json_data = json.load(json_file)
 
-            except json.decoder.JSONDecodeError:
-                return training_data
+                except json.decoder.JSONDecodeError:
+                    return []
+                
+        except FileNotFoundError:
+            return []
 
         for state in json_data:
             converted_state = {}

@@ -2,7 +2,7 @@
 Read the comments below to understand how the different parameters work"""
 from time import time
 
-from ai import AI
+from improved_project.original_ai import Original_AI
 from testing_ai import Testing_AI
 from random_ai import Random_AI
 from game_system import Game_system
@@ -21,17 +21,17 @@ if no_display and not both_players_are_AI:
     no_display = False
 
 if both_players_are_AI:
-    player_1 = AI()
+    player_1 = Original_AI()
     if test_ai:
         player_2 = Random_AI()
     else:
-        player_2 = AI()
+        player_2 = Original_AI()
 else:
     player_1 = Human_player()
     if test_ai:
         player_2 = Random_AI()
     else:  
-        player_2 = AI()
+        player_2 = Original_AI()
 
 # graphics handles everything related to the display of the game
 # game_system sets the rules and oversees the game

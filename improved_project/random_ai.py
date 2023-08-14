@@ -10,7 +10,6 @@ class Random_AI(Player_interface):
 
     def __init__(self):
         self.is_AI = True
-        self.strategy = None
 
     def play(self, current_state: np.array) -> np.array:
         """
