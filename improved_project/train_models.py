@@ -1,5 +1,5 @@
 """
-Measures the performance of the original AI against the baseline AI
+Measures the performance of several models against the baseline AI
 for different training times and display a visualization of it.
 """
 
@@ -8,11 +8,11 @@ from time import time
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from original_ai import Original_AI
 from random_ai import Random_AI
 from game_system import Game_system
-from human_player import Human_player
 from graphics import Graphics
+from original_ai import Original_AI
+from q_learning import QLearningAI
 
 def plot_results(results: pd.DataFrame):
     plt.plot("training_time", "score", data=results)
@@ -21,10 +21,16 @@ def plot_results(results: pd.DataFrame):
     plt.ylabel("Score (wins minus losses)")
     plt.show()
 
-def train_model():
+def train_model(model="original"):
 
-    player_1 = Original_AI()
-    player_2 = Original_AI()
+    if model == "original":
+        player_1 = Original_AI()
+        player_2 = Original_AI()
+    elif model == "q_learning":
+        player_1 = QLearningAI()
+        player_2 = QLearningAI()
+
+
     player_3 = Random_AI()
 
     no_display = False
@@ -63,20 +69,21 @@ def train_model():
     while training_game_system.play_a_game((3, 3)) and games_played < games_count:
         games_played += 1
         if games_played % 500 == 0:
-
+            player_1.save_training_data()
+            player_2.save_training_data()
             print(f"Training games played: {games_played}")
             # Updating the training time
             total_time = total_time + (time() - starting_time)
             results["training_time"].append(total_time)
 
             # Playing 100 games against the baseline model
-            # During the tests, the exploration rate is set to 0 so the AI always prioritizes
+            # During the tests, exploration is disabled so the AI always prioritizes
             # the best known move.
-            player_1.exploration_rate = 0
+            player_1.explore = False
             test_game_system.reset_games_counter()
             for i in range(100):
                 test_game_system.play_a_game((3, 3))
-            player_1.exploration_rate = 0.5 # Resetting the exploration rate to its previous value
+            player_1.explore = True
 
             results["wins"].append(test_game_system.player_1_scores["WINS"])
             results["losses"].append(test_game_system.player_1_scores["LOSSES"])
@@ -86,9 +93,9 @@ def train_model():
             starting_time = time()
 
     results_df = pd.DataFrame(results)
-    results_df.to_csv("original_model_results.csv")
+    results_df.to_csv(f"{model}_results.csv")
 
 
-#train_model()
-results_df = pd.read_csv("original_model_results.csv")
-plot_results(results_df)
+train_model(model="q_learning")
+"""results_df = pd.read_csv("original_model_results.csv")
+plot_results(results_df)"""

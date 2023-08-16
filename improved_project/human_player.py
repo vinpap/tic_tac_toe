@@ -11,3 +11,5 @@ class Human_player(Player_interface):
 
     def notify_game_result(self, result):
         return
+    
+
