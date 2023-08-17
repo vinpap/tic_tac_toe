@@ -35,6 +35,9 @@ class Original_AI(Player_interface):
 
         self.training_data = self.load_training_data()
         self.moves_history = []
+    
+    def __str__(self):
+        return "original_model"
 
 
     def play(self, current_state):

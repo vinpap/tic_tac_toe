@@ -16,7 +16,7 @@ class QLearningAI(Player_interface):
     # The q-table is a static attribute as it needs to be shared
     # between all instances of QLearningAI models.
 
-    def __init__(self, alpha=0.1, gamma=0.8, epsilon=0.5):
+    def __init__(self, alpha=0.1, gamma=0.9, epsilon=0.3):
         self.is_AI = True
         self.history = [] # List of all successive moves in the current game
         # Used at the end of each game to update the q-table
@@ -27,6 +27,7 @@ class QLearningAI(Player_interface):
         self.alpha = alpha # learning rate
         self.gamma = gamma # discount rate
         self.epsilon = epsilon # 'greediness rate' that defines whether the model exploits or explores
+        # The higher the rate, the more likely the model is to explore, i.e. playing a random move.
 
 
         if QLearningAI.q_table == []:
@@ -37,6 +38,10 @@ class QLearningAI(Player_interface):
             except FileNotFoundError:
                 QLearningAI.q_table = self.generate_initial_q_table()
                 self.save_training_data()
+    
+    def __str__(self):
+
+        return f"q_learning_alpha{self.alpha}_gamma{self.gamma}_epsilon{self.epsilon}"
 
 
     def play(self, current_state: np.array) -> np.array:
@@ -51,8 +56,6 @@ class QLearningAI(Player_interface):
 
         Returns the new state of the board after the AI played as a numpy array.  
         """
-
-        self.history.append(current_state)
 
         # First, compute a random number between 0 and 1 and compare it to epsilon
         # to decide if we should exploit or explore.
@@ -74,10 +77,11 @@ class QLearningAI(Player_interface):
         """
         Overrided from Player_interface.
         """
-        self.update_q_table()
+        self.update_q_table(result)
+        self.save_training_data()
         self.history = []
     
-    def update_q_table(self):
+    def update_q_table(self, reward):
         """
         Updates the values associated with each state based on the reward obtained.
 
@@ -86,11 +90,16 @@ class QLearningAI(Player_interface):
         going back from there.
         """
 
-        for state in reversed(self.history):
-            for index in QLearningAI.q_table[0]:
-                if np.array_equal(state, QLearningAI.q_table[0][index]):
+        for state_index in reversed(range(len((self.history)))):
+            for index in range(len(QLearningAI.q_table[0])):
+                if np.array_equal(self.history[state_index], QLearningAI.q_table[0][index]):
                     current_value = QLearningAI.q_table[1][index]
-                    new_value = self
+                    delta_t = len(self.history) - (state_index+1)
+                    new_value = (
+                        (1-self.alpha) * current_value +
+                        self.alpha * (reward * self.gamma**delta_t)
+                        )
+                    
 
 
     

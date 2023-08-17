@@ -3,6 +3,8 @@ Measures the performance of several models against the baseline AI
 for different training times and display a visualization of it.
 """
 
+import itertools
+import os
 from time import time
 
 import pandas as pd
@@ -21,14 +23,33 @@ def plot_results(results: pd.DataFrame):
     plt.ylabel("Score (wins minus losses)")
     plt.show()
 
-def train_model(model="original"):
+def plot_all_results():
+    """
+    Plots all results in the training metrics folder side-by-side.
+    """
+    filenames = os.listdir("training_metrics")
+    rows_count = len(filenames)//5 + 1
+    columns_count = 5
+
+    fig, axes = plt.subplots(rows_count, columns_count)
+
+    data_index = 0
+    for ax in axes.flat:
+        ax.set(xlabel="Training time (sec)", ylabel="Score (wins minus losses)", title=filenames[0])
+        df = pd.read_csv(f"training_metrics/{filenames[0]}")
+        ax.plot("training_time", "score", data=df)
+        data_index += 1
+    plt.show()
+
+
+def train_model(model="original", games_count=1000, **hyperparameters):
 
     if model == "original":
         player_1 = Original_AI()
         player_2 = Original_AI()
-    elif model == "q_learning":
-        player_1 = QLearningAI()
-        player_2 = QLearningAI()
+    elif model == "q-learning":
+        player_1 = QLearningAI(**hyperparameters)
+        player_2 = QLearningAI(**hyperparameters)
 
 
     player_3 = Random_AI()
@@ -54,7 +75,6 @@ def train_model(model="original"):
     with open("training.json", 'w') as _:
         pass
 
-    games_count = 20000
     games_played = 0
     starting_time = time()
     total_time = 0
@@ -68,7 +88,7 @@ def train_model(model="original"):
     # over these 100 games is then saved.
     while training_game_system.play_a_game((3, 3)) and games_played < games_count:
         games_played += 1
-        if games_played % 500 == 0:
+        if games_played % 200 == 0:
             player_1.save_training_data()
             player_2.save_training_data()
             print(f"Training games played: {games_played}")
@@ -93,9 +113,28 @@ def train_model(model="original"):
             starting_time = time()
 
     results_df = pd.DataFrame(results)
-    results_df.to_csv(f"{model}_results.csv")
+    results_df.to_csv(f"training_metrics/{player_1}_results.csv", index=False)
+
+def finetune_q_learning():
+    """
+    Grid-search function that looks for optimal hyperparameters
+    for Q-learning.
+    """
+
+    alpha_values = (0.1, 0.3)
+    gamma_values = (0.5, 0.9)
+    epsilon_values = (0.2, 0.6)
+
+    for alpha, gamma, epsilon in itertools.product(alpha_values, gamma_values, epsilon_values):
+        print("Trying with the following hyperparameters:")
+        print(f"alpha = {alpha}")
+        print(f"gamma = {gamma}")
+        print(f"epsilon = {epsilon}")
+        train_model(model="q-learning", games_count=1600, alpha=alpha, gamma=gamma, epsilon=epsilon)
+        os.remove("training_data/q_learning.pkl")
 
 
-train_model(model="q_learning")
-"""results_df = pd.read_csv("original_model_results.csv")
+
+finetune_q_learning()
+"""results_df = pd.read_csv("training_metrics/q_learning_results.csv")
 plot_results(results_df)"""
