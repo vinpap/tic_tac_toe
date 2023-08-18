@@ -16,18 +16,21 @@ class QLearningAI(Player_interface):
     # The q-table is a static attribute as it needs to be shared
     # between all instances of QLearningAI models.
 
-    def __init__(self, alpha=0.1, gamma=0.9, epsilon=0.3):
+    def __init__(self, alpha=0.1, gamma=0.8, epsilon=0.3):
         self.is_AI = True
         self.history = [] # List of all successive moves in the current game
         # Used at the end of each game to update the q-table
-        self.explore = True # The AI will never explore if this is set to False
-        # (used in test games)
+        self.learning = True
 
         # Hyperparameter definitions:
         self.alpha = alpha # learning rate
         self.gamma = gamma # discount rate
         self.epsilon = epsilon # 'greediness rate' that defines whether the model exploits or explores
         # The higher the rate, the more likely the model is to explore, i.e. playing a random move.
+
+        self.games_played = 0 # Count of games played since the game was launched
+        #self.training_frequency = 20 # Defines how often the model should update its
+        # Q-table (every n games)
 
 
         if QLearningAI.q_table == []:
@@ -59,15 +62,15 @@ class QLearningAI(Player_interface):
 
         # First, compute a random number between 0 and 1 and compare it to epsilon
         # to decide if we should exploit or explore.
-        # Moreover, the AI never explores if its 'explore' attribute is set to False.
-        if random.random() < self.epsilon and self.explore:
+        # Moreover, the AI never explores if its 'learning' attribute is set to False.
+        if random.random() < self.epsilon and self.learning:
             # Explore
             # Get a list of all possible moves and pick one randomly
             move = self.get_random_move(current_state)
         else: 
             # Exploit
             # Play the best known move
-            move = self.get_best_move(current_state)
+            move = self.get_best_move(current_state)[0]
 
         self.history.append(move)
         return move
@@ -77,8 +80,10 @@ class QLearningAI(Player_interface):
         """
         Overrided from Player_interface.
         """
-        self.update_q_table(result)
-        self.save_training_data()
+        self.games_played += 1
+        if self.learning:
+            self.update_q_table(result)
+            self.save_training_data()
         self.history = []
     
     def update_q_table(self, reward):
@@ -90,16 +95,44 @@ class QLearningAI(Player_interface):
         going back from there.
         """
 
-        for state_index in reversed(range(len((self.history)))):
+        for state_index in reversed(range(len(self.history)-1)):
             for index in range(len(QLearningAI.q_table[0])):
                 if np.array_equal(self.history[state_index], QLearningAI.q_table[0][index]):
+                    current_state = QLearningAI.q_table[0][index]
                     current_value = QLearningAI.q_table[1][index]
-                    delta_t = len(self.history) - (state_index+1)
+                    
                     new_value = (
                         (1-self.alpha) * current_value +
-                        self.alpha * (reward * self.gamma**delta_t)
-                        )
+                        self.alpha * (reward + 
+                                      self.gamma * 
+                                      self.find_best_next_state(current_state)[1]))
                     
+                    QLearningAI.q_table[1][index] = new_value
+
+    
+    def find_best_next_state(self, current_state):
+        """
+        Returns the state at t+1 with the best Q-value.
+
+        In order to do that, we look for the best possible state 
+        among all the states that could arrive after the opponent
+        plays.
+        """
+
+        # Find all possible states after the opponent plays, and finds the
+        # best possible move we could play after that
+        possible_future_states = [[], []]
+        for x in range(len(current_state)):
+            for y in range(len(current_state[x])):
+                if current_state[x, y] == 0:
+                    possible_new_state = current_state.copy()
+                    possible_new_state[x, y] = -1
+                    best_future_move = self.get_best_move(possible_new_state)
+                    possible_future_states[0].append(best_future_move[0])
+                    possible_future_states[1].append(best_future_move[1])
+
+        best_move_index = possible_future_states[1].index(max(possible_future_states[1]))
+        return (possible_future_states[0][best_move_index], possible_future_states[1][best_move_index])              
 
 
     
@@ -134,7 +167,7 @@ class QLearningAI(Player_interface):
         """
         possible_moves = self.get_all_possible_moves(current_board)
         best_move_index = possible_moves[1].index(max(possible_moves[1]))
-        return possible_moves[0][best_move_index]
+        return (possible_moves[0][best_move_index], possible_moves[1][best_move_index])
     
     def get_random_move(self, current_board):
         """

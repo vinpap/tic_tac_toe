@@ -54,7 +54,7 @@ def train_model(model="original", games_count=1000, **hyperparameters):
 
     player_3 = Random_AI()
 
-    no_display = False
+    no_display = True
     if no_display:
         training_game_system = Game_system(player_1, player_2)
         test_game_system = Game_system(player_1, player_3)
@@ -88,10 +88,11 @@ def train_model(model="original", games_count=1000, **hyperparameters):
     # over these 100 games is then saved.
     while training_game_system.play_a_game((3, 3)) and games_played < games_count:
         games_played += 1
+        if games_played % 10 == 0:
+            print(f"Training games played: {games_played}")
         if games_played % 200 == 0:
             player_1.save_training_data()
             player_2.save_training_data()
-            print(f"Training games played: {games_played}")
             # Updating the training time
             total_time = total_time + (time() - starting_time)
             results["training_time"].append(total_time)
@@ -99,11 +100,12 @@ def train_model(model="original", games_count=1000, **hyperparameters):
             # Playing 100 games against the baseline model
             # During the tests, exploration is disabled so the AI always prioritizes
             # the best known move.
-            player_1.explore = False
+            player_1.learning = False
             test_game_system.reset_games_counter()
+            print("Testing...")
             for i in range(100):
                 test_game_system.play_a_game((3, 3))
-            player_1.explore = True
+            player_1.learning = True
 
             results["wins"].append(test_game_system.player_1_scores["WINS"])
             results["losses"].append(test_game_system.player_1_scores["LOSSES"])
@@ -121,8 +123,8 @@ def finetune_q_learning():
     for Q-learning.
     """
 
-    alpha_values = (0.1, 0.3)
-    gamma_values = (0.5, 0.9)
+    alpha_values = (0.1,)
+    gamma_values = (0.5,)
     epsilon_values = (0.2, 0.6)
 
     for alpha, gamma, epsilon in itertools.product(alpha_values, gamma_values, epsilon_values):
@@ -130,7 +132,7 @@ def finetune_q_learning():
         print(f"alpha = {alpha}")
         print(f"gamma = {gamma}")
         print(f"epsilon = {epsilon}")
-        train_model(model="q-learning", games_count=1600, alpha=alpha, gamma=gamma, epsilon=epsilon)
+        train_model(model="q-learning", games_count=400, alpha=alpha, gamma=gamma, epsilon=epsilon)
         os.remove("training_data/q_learning.pkl")
 
 
