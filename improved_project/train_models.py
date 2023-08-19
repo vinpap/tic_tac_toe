@@ -34,9 +34,9 @@ def plot_all_results():
     fig, axes = plt.subplots(rows_count, columns_count)
 
     data_index = 0
-    for ax in axes.flat:
-        ax.set(xlabel="Training time (sec)", ylabel="Score (wins minus losses)", title=filenames[0])
-        df = pd.read_csv(f"training_metrics/{filenames[0]}")
+    for ax, filename in zip(axes.flat, filenames):
+        ax.set(xlabel="Training time (sec)", ylabel="Score (wins minus losses)", title=filename)
+        df = pd.read_csv(f"training_metrics/{filename}")
         ax.plot("training_time", "score", data=df)
         data_index += 1
     plt.show()
@@ -123,8 +123,8 @@ def finetune_q_learning():
     for Q-learning.
     """
 
-    alpha_values = (0.1,)
-    gamma_values = (0.5,)
+    alpha_values = (0.05,)
+    gamma_values = (0.5, 0.8)
     epsilon_values = (0.2, 0.6)
 
     for alpha, gamma, epsilon in itertools.product(alpha_values, gamma_values, epsilon_values):
@@ -132,11 +132,12 @@ def finetune_q_learning():
         print(f"alpha = {alpha}")
         print(f"gamma = {gamma}")
         print(f"epsilon = {epsilon}")
-        train_model(model="q-learning", games_count=400, alpha=alpha, gamma=gamma, epsilon=epsilon)
+        train_model(model="q-learning", games_count=1401, alpha=alpha, gamma=gamma, epsilon=epsilon)
         os.remove("training_data/q_learning.pkl")
 
 
 
-finetune_q_learning()
+#finetune_q_learning()
+plot_all_results()
 """results_df = pd.read_csv("training_metrics/q_learning_results.csv")
 plot_results(results_df)"""
