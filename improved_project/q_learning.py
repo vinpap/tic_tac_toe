@@ -251,7 +251,8 @@ class QLearningAI(Player_interface):
                 elif board_status == 1:
                     values.append(1)
                 else:
-                    values.append(random.random())
+                    #values.append(random.random())
+                    values.append(0.5)
 
         return [valid_states, values]
 

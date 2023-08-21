@@ -30,6 +30,8 @@ def plot_all_results():
     filenames = os.listdir("training_metrics")
     rows_count = len(filenames)//5 + 1
     columns_count = 5
+    plt.rcParams['font.size'] = 8
+
 
     fig, axes = plt.subplots(rows_count, columns_count)
 
@@ -138,6 +140,6 @@ def finetune_q_learning():
 
 
 #finetune_q_learning()
-plot_all_results()
-"""results_df = pd.read_csv("training_metrics/q_learning_results.csv")
-plot_results(results_df)"""
+#plot_all_results()
+train_model(model="q-learning", games_count=3000, alpha=0.005, gamma=0.6, epsilon=0.7)
+
