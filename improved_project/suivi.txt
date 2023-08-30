@@ -7,3 +7,4 @@ INFOS NOTÉES AU FIL DU PROJET QUI PEUVENT POTENTIELLEMENT APPARAÎTRE DANS LE R
 - Après recherche, le modèle actuel peut être assimilé à Monte Carlo ???
 
 - Difficulté non anticipée : contrairement aux algorithmes de ML classiques, les algorithmes de RL dépendent grandement du problème à résoudre et doivent être interfacés avec des environnements très divers
+- Bilan sur les performances de Q-learning : après finetuning, q-learning montre des performances inférieures à celles du modèle de base

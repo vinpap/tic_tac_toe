@@ -23,6 +23,7 @@ class Original_AI(Player_interface):
         # vs picking moves it already knows. See should_explore() for more info
 
         self.always_explore = False
+        self.explore = True
         self.exploration_rate = 0.5
 
         if self.always_explore:
@@ -34,6 +35,10 @@ class Original_AI(Player_interface):
 
         self.training_data = self.load_training_data()
         self.moves_history = []
+    
+    def __str__(self):
+        return "original_model"
+
 
     def play(self, current_state):
         """current_state: numpy array showing the current state of the board
@@ -98,7 +103,7 @@ class Original_AI(Player_interface):
         # should_explore(value) finds out whether or not the AI should try new moves
         # or stick with the best one it already knows, based on the best known candidate
         # value. See implementation for should_explore for more details
-        if self.should_explore(best_known_candidate["value"]):
+        if self.should_explore(best_known_candidate["value"]) and self.explore:
             if unknown_moves != []:
                 r = random.randint(0, len(unknown_moves) - 1)
                 chosen_move = unknown_moves[r]
