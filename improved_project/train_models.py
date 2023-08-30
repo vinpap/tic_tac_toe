@@ -15,6 +15,7 @@ from game_system import Game_system
 from graphics import Graphics
 from original_ai import Original_AI
 from q_learning import QLearningAI
+from deep_q_learning import DeepQLearningAI
 
 def plot_results(results: pd.DataFrame):
     plt.plot("training_time", "score", data=results)
@@ -52,6 +53,9 @@ def train_model(model="original", games_count=1000, **hyperparameters):
     elif model == "q-learning":
         player_1 = QLearningAI(**hyperparameters)
         player_2 = QLearningAI(**hyperparameters)
+    elif model == "deep q-learning":
+        player_1 = DeepQLearningAI(**hyperparameters)
+        player_2 = DeepQLearningAI(**hyperparameters)
 
 
     player_3 = Random_AI()
@@ -136,6 +140,12 @@ def finetune_q_learning():
         print(f"epsilon = {epsilon}")
         train_model(model="q-learning", games_count=1401, alpha=alpha, gamma=gamma, epsilon=epsilon)
         os.remove("training_data/q_learning.pkl")
+
+def finetune_deep_q_learning():
+    """
+    Grid-search function for deep Q-learning.
+    """
+    pass
 
 
 
