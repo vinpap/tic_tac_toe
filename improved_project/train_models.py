@@ -55,12 +55,14 @@ def train_model(model="original", games_count=1000, **hyperparameters):
         player_2 = QLearningAI(**hyperparameters)
     elif model == "deep q-learning":
         player_1 = DeepQLearningAI(**hyperparameters)
-        player_2 = DeepQLearningAI(**hyperparameters)
+        #player_2 = DeepQLearningAI(**hyperparameters)
+        from human_player import Human_player
+        player_2 = Human_player()
 
 
     player_3 = Random_AI()
 
-    no_display = True
+    no_display = False
     if no_display:
         training_game_system = Game_system(player_1, player_2)
         test_game_system = Game_system(player_1, player_3)
@@ -151,5 +153,5 @@ def finetune_deep_q_learning():
 
 #finetune_q_learning()
 #plot_all_results()
-train_model(model="q-learning", games_count=3000, alpha=0.005, gamma=0.6, epsilon=0.7)
+train_model(model="deep q-learning", games_count=200, alpha=0.001, gamma=0.5, epsilon=0.5)
 
