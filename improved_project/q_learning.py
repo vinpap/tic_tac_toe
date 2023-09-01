@@ -16,7 +16,7 @@ class QLearningAI(Player_interface):
     # The q-table is a static attribute as it needs to be shared
     # between all instances of QLearningAI models.
 
-    def __init__(self, alpha=0.005, gamma=0.8, epsilon=0.3):
+    def __init__(self, alpha=0.005, gamma=0.5, epsilon=0.5):
         self.is_AI = True
         self.history = [] # List of all successive moves in the current game
         # Used at the end of each game to update the q-table
