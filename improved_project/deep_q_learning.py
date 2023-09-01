@@ -12,7 +12,7 @@ class DeepQLearningAI(Player_interface):
 
     dnn = None
 
-    def __init__(self, alpha=0.001, gamma=0.5, epsilon=0.5):
+    def __init__(self, alpha=0.01, gamma=0.5, epsilon=0.5):
         self.is_AI = True
         self.learning = True
         self.alpha = alpha # Learning rate
@@ -36,7 +36,7 @@ class DeepQLearningAI(Player_interface):
     
     def __str__(self):
 
-        return f"deep_q_learning_alpha{self.alpha}"
+        return f"deep_q_learning_alpha{self.alpha}_gamma{self.gamma}_epsilon{self.epsilon}"
 
 
     def play(self, current_state: np.array) -> np.array:
@@ -64,8 +64,8 @@ class DeepQLearningAI(Player_interface):
             # Play the best known move according to the model,
             # after filtering out any illegal move.
             current_state_vector = current_state.flatten()
-            q_values = DeepQLearningAI.dnn.predict(np.array([current_state_vector]))[0]
-            ordered_q_values = np.argsort(q_values)
+            q_values = DeepQLearningAI.dnn.predict(np.array([current_state_vector]), verbose=0)[0]
+            ordered_q_values = np.flip(np.argsort(q_values))
             for index in ordered_q_values:
                 if self.move_is_valid(current_state, index):
                     move = current_state_vector
@@ -113,18 +113,40 @@ class DeepQLearningAI(Player_interface):
         """
         init = keras.initializers.HeUniform()
         model = keras.Sequential()
-        model.add(keras.layers.Dense(24, input_dim=9, activation="relu", kernel_initializer=init))
-        model.add(keras.layers.Dense(24, activation="relu", kernel_initializer=init))
+        model.add(keras.layers.Dense(12, input_dim=9, activation="relu", kernel_initializer=init))
+        model.add(keras.layers.Dense(12, activation="relu", kernel_initializer=init))
         model.add(keras.layers.Dense(9, activation="linear", kernel_initializer=init))
         model.compile(loss="mean_squared_error", optimizer=keras.optimizers.Adam(lr=self.alpha))
         return model
+    
+    def save_training_data(self):
+        """
+        Saves the trained model in the training_data folder.
+        """
+        DeepQLearningAI.dnn.save("training_data/deep_q_learning.keras")
     
     def train_model(self):
         """
         Trains the model using the replayed memory buffer as training data.
         """
 
-        DeepQLearningAI.dnn.save("training_data/deep_q_learning.keras")
+        # First we shuffle the memory buffer in order to avoid overfitting
+        np.random.shuffle(self.replayed_memory_buffer)
+        X_train = []
+        y_train = []
+
+        for experience in self.replayed_memory_buffer:
+            q_values = DeepQLearningAI.dnn.predict(np.array([experience[0]]), verbose=0)
+            q_target = experience[3]
+            q_values[0][experience[1]] = q_target
+            X_train.append(experience[0])
+            y_train.append(q_values.reshape(9))
+        
+        DeepQLearningAI.dnn.fit(np.array(X_train), np.array(y_train))
+
+        self.replayed_memory_buffer = []
+
+
     
     def move_is_valid(self, current_state: np.array, move: int):
         """
@@ -142,23 +164,24 @@ class DeepQLearningAI(Player_interface):
         """
         Overrided from Player_interface.
         """
-        # Here we loop starting from the last state
-        history_from_end = list(reversed(self.game_history))
-        for state_index in range(len(history_from_end)):
-            game_move =  history_from_end[state_index]    
-            reward = result * (self.gamma**state_index)
-            tuple_to_append = (game_move[0],
-                               game_move[1],
-                               game_move[2],
-                               reward)       
-            self.replayed_memory_buffer.append(tuple_to_append)    
-        self.game_history = []
+        if self.learning:
+            # Here we loop starting from the last state
+            history_from_end = list(reversed(self.game_history))
+            for state_index in range(len(history_from_end)):
+                game_move =  history_from_end[state_index]    
+                reward = result * (self.gamma**state_index)
+                tuple_to_append = (game_move[0],
+                                game_move[1],
+                                game_move[2],
+                                reward)       
+                self.replayed_memory_buffer.append(tuple_to_append)    
+            
 
-        self.games_played += 1
-        if self.games_played % self.batch_size == 0:
-            print("Training...")
-            self.train_model()
-    
+            self.games_played += 1
+            if self.games_played % self.batch_size == 0:
+                print("Training...")
+                self.train_model()
+        self.game_history = []
 
 
     

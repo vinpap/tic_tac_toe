@@ -55,14 +55,14 @@ def train_model(model="original", games_count=1000, **hyperparameters):
         player_2 = QLearningAI(**hyperparameters)
     elif model == "deep q-learning":
         player_1 = DeepQLearningAI(**hyperparameters)
-        #player_2 = DeepQLearningAI(**hyperparameters)
-        from human_player import Human_player
-        player_2 = Human_player()
+        player_2 = DeepQLearningAI(**hyperparameters)
+        """from human_player import Human_player
+        player_2 = Human_player()"""
 
 
     player_3 = Random_AI()
 
-    no_display = False
+    no_display = True
     if no_display:
         training_game_system = Game_system(player_1, player_2)
         test_game_system = Game_system(player_1, player_3)
@@ -147,11 +147,20 @@ def finetune_deep_q_learning():
     """
     Grid-search function for deep Q-learning.
     """
-    pass
+    alpha_values = (0.05, 0.01, 0.005)
+    gamma_values = (0.5, 0.8)
+    epsilon_values = (0.2, 0.6)
+    for alpha, gamma, epsilon in itertools.product(alpha_values, gamma_values, epsilon_values):
+        print("Trying with the following hyperparameters:")
+        print(f"alpha = {alpha}")
+        print(f"gamma = {gamma}")
+        print(f"epsilon = {epsilon}")
+        train_model(model="deep q-learning", games_count=5000, alpha=alpha, gamma=gamma, epsilon=epsilon)
+        os.remove("training_data/deep_q_learning.keras")
 
 
 
-#finetune_q_learning()
+finetune_deep_q_learning()
 #plot_all_results()
-train_model(model="deep q-learning", games_count=200, alpha=0.001, gamma=0.5, epsilon=0.5)
+#train_model(model="deep q-learning", games_count=5000, alpha=0.001, gamma=0.8, epsilon=0.5)
 
