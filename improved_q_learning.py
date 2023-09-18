@@ -13,7 +13,7 @@ import numpy as np
 from interfaces import Player_interface
 
 
-class Original_AI(Player_interface):
+class Improved_q_learning(Player_interface):
     def __init__(self):
         self.is_AI = True
 
@@ -37,7 +37,7 @@ class Original_AI(Player_interface):
         self.moves_history = []
     
     def __str__(self):
-        return "original_model"
+        return "improved q-learning"
 
 
     def play(self, current_state):

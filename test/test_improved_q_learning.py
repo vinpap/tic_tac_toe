@@ -1,5 +1,5 @@
 """
-Contains the unit tests for the original AI, 
+Contains the unit tests for the improved Q-learning, 
 which is a hand-coded model-free reinforcement model.
 """
 import os
@@ -7,14 +7,14 @@ import os
 import pytest
 import numpy as np
 
-from original_ai import Original_AI
+from improved_q_learning import Improved_q_learning
 
 @pytest.fixture
 def test_ai():
     """
     Returns an instance of the original AI to use for testing.
     """
-    return Original_AI()
+    return Improved_q_learning()
 
 def test_play(test_ai):
     """

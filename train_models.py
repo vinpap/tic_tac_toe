@@ -6,6 +6,7 @@ for different training times and display a visualization of it.
 import itertools
 import os
 from time import time
+from textwrap import wrap
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -13,7 +14,7 @@ import matplotlib.pyplot as plt
 from random_ai import Random_AI
 from game_system import Game_system
 from graphics import Graphics
-from original_ai import Original_AI
+from improved_q_learning import Improved_q_learning
 from q_learning import QLearningAI
 from deep_q_learning import DeepQLearningAI
 
@@ -26,38 +27,36 @@ def plot_results(results: pd.DataFrame):
 
 def plot_all_results():
     """
-    Plots all results in the training metrics folder side-by-side.
+    Plots all results in the training metrics folder.
     """
     filenames = os.listdir("training_metrics")
-    rows_count = len(filenames)//5 + 1
-    columns_count = 5
-    plt.rcParams['font.size'] = 8
 
+    plt.rcParams['font.size'] = 12
 
-    fig, axes = plt.subplots(rows_count, columns_count)
+    fig = plt.figure()
+    ax = fig.subplots()
 
     data_index = 0
-    for ax, filename in zip(axes.flat, filenames):
-        ax.set(xlabel="Training time (sec)", ylabel="Score (wins minus losses)", title=filename)
+    ax.set(xlabel="Training time (sec)", ylabel="Score (wins minus losses)", title="Training scores for the models considered")
+    for filename in filenames:
         df = pd.read_csv(f"training_metrics/{filename}")
-        ax.plot("training_time", "score", data=df)
+        plt.plot("training_time", "score", data=df, label=filename.split(".")[0])
         data_index += 1
+    plt.legend()
     plt.show()
 
 
 def train_model(model="original", games_count=1000, **hyperparameters):
 
-    if model == "original":
-        player_1 = Original_AI()
-        player_2 = Original_AI()
+    if model == "improved_q_learning":
+        player_1 = Improved_q_learning()
+        player_2 = Improved_q_learning()
     elif model == "q-learning":
         player_1 = QLearningAI(**hyperparameters)
         player_2 = QLearningAI(**hyperparameters)
     elif model == "deep q-learning":
         player_1 = DeepQLearningAI(**hyperparameters)
         player_2 = DeepQLearningAI(**hyperparameters)
-        """from human_player import Human_player
-        player_2 = Human_player()"""
 
 
     player_3 = Random_AI()
@@ -160,7 +159,7 @@ def finetune_deep_q_learning():
 
 
 
-finetune_deep_q_learning()
-#plot_all_results()
+#finetune_deep_q_learning()
+# plot_all_results()
 #train_model(model="deep q-learning", games_count=5000, alpha=0.001, gamma=0.8, epsilon=0.5)
 
