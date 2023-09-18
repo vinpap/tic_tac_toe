@@ -12,7 +12,7 @@ from improved_q_learning import Improved_q_learning
 @pytest.fixture
 def test_ai():
     """
-    Returns an instance of the original AI to use for testing.
+    Returns an instance of the AI to use for testing.
     """
     return Improved_q_learning()
 
