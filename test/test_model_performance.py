@@ -22,7 +22,7 @@ def new_model():
     """
 
     # Training time in seconds
-    training_time = 500
+    training_time = 5000
 
     new_model = Improved_q_learning()
     opponent = Improved_q_learning()
@@ -54,7 +54,7 @@ def original_model():
     """
 
     # Training time in seconds
-    training_time = 500
+    training_time = 5000
 
     original_model = QLearningAI()
     opponent = QLearningAI()
@@ -88,7 +88,7 @@ def test_model_performance(new_model, original_model):
 
     new_model.explore = False
     original_model.learning = False
-    test_games_count = 200
+    test_games_count = 1000
     
     # Computing new model's score
     game_system_1 = Game_system(new_model, Random_AI())

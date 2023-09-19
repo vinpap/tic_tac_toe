@@ -26,7 +26,7 @@ class Graphics(Graphics_interface):
         self.title_font = pygame.font.SysFont("Comic Sans MS", 40)
         self.info_font = pygame.font.SysFont("Comic Sans MS", 30)
         self.title_surface = self.title_font.render(
-            "Tic-tac-toe - Reinforcment Learning", False, (0, 0, 0)
+            "Tic-tac-toe - Reinforcement Learning", False, (0, 0, 0)
         )
 
     def update_players_data(self, p1_is_ai, p1_scores, p2_is_ai, p2_scores):
