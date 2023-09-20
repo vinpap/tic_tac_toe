@@ -3,6 +3,9 @@
 \usepackage{babel}
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage[justification=centering]{caption}
+\usepackage{amsmath}
+\usepackage{amssymb}
 
 \graphicspath{ {./img/} }
 \title{%
@@ -49,8 +52,66 @@
         \caption{Une capture d'écran de l'interface du jeu, ici lors d'une partie entre un joueur humain et une IA}
         \centering
     \end{figure}
+
     \subsection{Le modèle}
-    \subsubsection{Fonctionnement}
+    Le modèle initial pour ce projet est une implémentation du Q-learning, un modèle de renforcement sans modèle ("model-free reinforcement"). Commençons par parler du fonctionnement de ce modèle, et du renforcement de manière plus générale.
+
+    \subsubsection{L'apprentissage par renforcement}
+    L'apprentissage par renforcement (abrégé RL pour "Reinforcement Learning" dans la suite de ce dossier) est l'un des grands paradigmes du machine learning. Avec cette méthode, le modèle est un agent qui cherche à optimiser une récompense quantitative au cours du temps à partir d'expériences dans un environnement donné. L'objectif d'un modèle de RL est d'ajuster son comportement, appelé politique ou stratégie. Pour mieux comprendre ces notions, voici à quoi correspondent ces différents concepts dans le cas qui nous intéresse :
+    \begin{itemize}
+        \item L'agent est notre modèle
+        \item L'environnement est la configuration du plateau de jeu à un moment donné
+        \item Une expérience est un coup joué 
+        \item La récompense est le résultat à la fin d'une partie (victoire, défaite ou nul). Dans le cas qui nous intéresse, on quantifie ce résultat en établissant qu'une victoire donne 1 point, un nul 0 et une défaite -1.
+        \item La politique de notre modèle est la méthode qu'il utilise pour choisir un coup à jouer en fonction de l'état du plateau. La nature de cette politique varie selon les modèles, comme nous allons le voir.
+    \end{itemize}
+    Enfin, on notera qu'il existe deux types de modèles de RL : certains sont model-free, c'est-à-dire que notre IA n'a aucune connaissance préalable de l'environnement ou des mécanismes qui s'y produisent. D'autres sont model-based, ce qui veut dire qu'ils comportent un certain niveau de connaissance de l'environnement. Tous les modèles qui seront présentés ici sont model-free. Dit autrement, cela veut dire que nos modèles n'ont aucune connaissance des règles du morpion !
+    
+    Remarque: les principes de base du renforcement peuvent être facilement compris dans la mesure où ils sont inspirés des phénomènes d'apprentissage chez l'Homme et l'animal (se référer notamment à la célèbre expérience du \href{https://journals.openedition.org/bibnum/604}{chien de Pavlov}). On fait parfois une analogie entre le RL et certains aspects de l'éducation des enfants. Donner une récompense à un enfant, c'est encourager son comportement. Lui donner une punition (ou "récompense négative") c'est le dissuader de le reproduire à nouveau.
+
+    \subsubsection{Le Q-learning}
+    Le Q-learning est l'un des algorithmes de RL les plus connus. Il tire son nom du fait qu'il est basé sur une fonction $Q:S * A \rightarrow \mathbb{R}$ qui calcule la valeur d'une paire état/action, souvent appelée Q-value. Ici S est l'état de l'environnement à un instant donné, et A est une action possible dans cet état. Dit autrement, la Q-value définit la "qualité" d'une action à partir d'un état donné. Dans le cas du morpion :
+    \begin{itemize}
+        \item l'état Q est un vecteur à 9 dimensions qui est une visualisation applatie du plateau à un moment donné. On représente les cases où l'IA a déjà joué par une valeur de 1, celles où son adversaire a joué par une valeur de -1, et les cases où personne n'a joué par une valeur de 0. À titre d'exemple, le plateau montré dans la figure 1 est représenté pour l'IA par le vecteur $\begin{bmatrix}0&0&0&-1&0&0&0&1&1\end{bmatrix}$.
+        \item on représentera également une action comme un vecteur à 9 dimensions. Cette fois-ci, ce vecteur sera une représentation du plateau après avoir joué.
+    \end{itemize}
+
+    La Q-value de chaque action est stockée dans une table (appelée Q-table). Cette table constitue la politique du modèle de Q-learning, qui, pour faire un choix à un moment donné, choisira dans la table l'action qui présente la valeur la plus élevée pour l'état actuel.
+
+    Une question centrale demeure : comment le modèle peut-il apprendre ces valeurs ? La réponse est apportée par l'équation de Bellman :
+
+
+    {\centering $V(s)=max_a(R(s,a)+ \gamma*V(s’))$}
+    
+
+    Cette fonction est à la base de plusieurs algorithmes de RL. Elle donne la valeur optimale d'un état, sans se pencher sur une action spécifique. Regardons-la plus en détail :
+    \begin{itemize}
+        \item $V(s)$ est un ŕéel qui donne la valeur d'un état s
+        \item $s$ représente l'état
+        \item $R(s, a)$ est la récompense immédiatement obtenue aprés avoir réalisé l'action $a$ dans l'état $s$
+        \item $\gamma$ est le discount factor. C'est un paramètre de notre modèle compris entre 0 et 1 qui module l'impact de la valeur des états futurs potentiels sur les choix pris à un instant donné. Dit autrement, le modèle aura tendance à chercher des récompenses sur le long terme si l'on donne une valeur élevée à $\gamma$, et vice-versa
+        \item $s'$ est l'état que le modèle atteindrait après avoir réalisé l'action s.
+    \end{itemize}
+    On pourrait verbaliser cette équation ainsi :
+
+    {\centering \textbf{L'action optimale pour un état donné est celle qui maximise la somme de la récompense immédiate associée et de la valeur de l'état suivant pondérée par un facteur $\gamma$}}
+    
+
+    Remarque : il est tout à fait possible que certaines actions n'engendrent aucune récompense immédiate. Nous sommes dans ce cas : lors d'une partie de morpion, seul le dernier coup donne lieu à une récompense. C'est pour cette raison que la notion de "récompense immédiate" est absente des formules qui arrivent ci-dessous.
+    
+    On peut dériver l'algorithme du Q-learning de la notion de Q-value et de l'équation de Bellman. Celui-ci reste relativement simple :
+    \begin{enumerate}
+        \item Au début de l'entraînement, créer une Q-table qui contient toutes les actions possibles pour chaque état, et la remplir de valeurs arbitraires (0,5 dans mon cas)
+        \item Puis on commence à jouer des parties contre un autre joueur (généralement une autre IA, pour pouvoir entraîner le modèle vite). À chaque tour, le modèle choisit soit de jouer le coup qui présente la Q-value la plus élevée, soit de jouer un coup au hasard. Ce choix représente le dilemne exploration vs exploitation et est conditionné par le paramètre $\epsilon$, deux éléments que nous aborderons plus après. 
+        \item Au fil de la partie, le modèle garde en mémoire tous les coups qu'il a joués
+        \item À la fin de la partie, il reçoit une récompense $r$ dont la valeur vaut -1, 1 ou 0. Il peut alors mettre à jour les Q-values stockées dans la table. Pour cela, il remonte l'historique des coups en partant de la fin et, assigne à chacun de ces coups une nouvelle Q-value comme suit :
+
+        {\centering $Q(s,a) := (1-\alpha)*Q(s,a) + \alpha(r + \gamma * max_a'(s',a')) $}
+        où $max_a'(s',a')$ est la Q-value du coup disponible ayant la Q-value la plus élevée pour l'état suivant.
+        
+    \end{enumerate}
+
+
     \subsubsection{Performances de départ}
 
     \section{Outils et méthodologie}
