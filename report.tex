@@ -29,7 +29,7 @@
     \section*{Introduction}
     Ce cas pratique se penche sur l'amélioration d'un modèle d'apprentissage par renforcement appliqué au jeu vidéo. Pour ce faire, nous allons partir d'un modèle que j'ai développé il y a quelques années. Son but ? Apprendre à jouer (et gagner !) à l'un des jeux les plus simples et les plus connus du monde : le morpion.
     
-    Dans un premier temps nous ferons un état des lieux du modèle initial et de l'application qui lui est associée. Puis nous parlerons des outils et de la méthodologie utilisés dans le cadre de ce projet avant de présenter les solutions qui ont été mises en oeuvre afin d'améliorer les performances de notre modèle.
+    Dans un premier temps nous ferons un état des lieux du modèle initial et de l'application qui lui est associée. Puis nous parlerons des outils utilisés dans le cadre de ce projet, avant d'étudier les solutions mises en oeuvre afin d'améliorer les performances de notre modèle.
     
     Le code associé à ce dossier est disponible sur GitHub : 
     \url{https://github.com/vinpap/tic_tac_toe}.
@@ -111,20 +111,100 @@
         
     \end{enumerate}
 
+    Plus haut nous avons évoqué le dilemne exploration vs exploitation. Cette notion renvoit à un choix que tout modèle de renforcement doit faire lors de ses inférences : faut-il jouer le meilleur coup connu (i.e. exploiter ce que l'on sait déjà faire) ou tenter un nouveau coup aléatoire (et donc explorer d'autres possibilités) ? Ce choix est réalisé dans les modèles présentés dans ce dossier à l'aide de l'algorithme du epsilon-greedy. Celui-ci est très simple :
+    \begin{itemize}
+        \item À chaque inférence, le modèle choisit aléatoirement un réel entre 0 et 1
+        \item Si ce nombre est supérieur à un paramètre $\epsilon$ fixé, alors on joue le meilleur coup connu
+        \item Dans le cas contraire, on joue un coup aléatoire.
+    \end{itemize}
+
+    Le paramètre $\epsilon$ a donc un impact important : un epsilon trop bas peut rapidement conduire le modèle à stagner.
+
+    En résumé :
+    \begin{itemize}
+        \item Le Q-learning est un modèle de renforcement basé sur une table qui contient les valeurs associées à chaque action possible pour chaque état
+        \item L'algorithme d'entraînement est basé sur l'équation de Bellman
+        \item Dans notre cas, le modèle s'entraîne en jouant des parties contre lui-même
+        \item Lors de l'inférence, le paramètre $\epsilon$ est utilisé pour déterminer si le modèle va réaliser la meilleure action qu'il connaît ou effectuer une action aléatoire
+        \item Les hyperparamètres du modèle sont le learning rate $\alpha$, le discount rate $\gamma$ et le facteur exploitation/exploration $\epsilon$.
+    \end{itemize}
+
 
     \subsubsection{Performances de départ}
 
+    Dans le cadre de notre projet, les performances du modèle sont mesurées lors d'une phase de test où on fait jouer notre modèle 100 parties contre un bot qui choisit tous ses coups aléatoirement. Le score $s$ est obtenu comme suit : $s = victoires - defaites$ (les matchs nuls ne rapportent aucun point). Le modèle n'utilise pas le résultat de ces parties pour s'entraîner et choisira toujours de jouer les meilleurs coups connus (il ne cherchera donc pas à tenter de nouveaux coups). Cette phase de test est répétée régulièrement durant l'entraînement, en alternant 200 parties d'entraînement avec 100 parties de test.
+    
+    Voici les performances de notre modèle mesurées à différents points lors de l'entraînement, après avoir optimisé les hyperparamètres :
+
+    \begin{figure}[h]
+        \includegraphics[width=12cm]{q_learning_metrics}
+        \centering
+        \caption{Évolution du score du modèle de Q-learning au fil de l'entraînement}
+        \centering
+    \end{figure}
+
+
     \section{Outils et méthodologie}
     \subsubsection{Gestion de projet}
+
+    Afin de produire du code robuste et de vérifier la qualité du code produit, ce projet a été mené selon la méthode du Test-Driven Development. Dans le contexte de ce projet, cela consiste à coder les tests unitaires qui vérifient les performances et le bon fonctionnement des modèles produits avant de coder les modèles eux-mêmes.
+    
+    Voici un diagramme de Gantt qui présente l'estimation des charges réalisée en amont du projet :
+
+    \begin{figure}[h]
+        \includegraphics[width=13cm]{gantt}
+        \centering
+        \caption{Estimation de charge des différentes tâches du projet}
+        \centering
+    \end{figure}
+
     \subsubsection{Outils}
+
+    Les outils utilisés pour ce projet sont les suivants :
+    \begin{itemize}
+        \item numpy
+        \item keras
+        \item pyGame pour l'interface
+        \item pytest pour les tests unitaires
+        \item GitHub pour le versionnement de code et la gestion des tâches
+        \item \LaTeX pour la rédaction de ce rapport.
+    \end{itemize}
     \subsubsection{Métriques}
 
-    \section{Première tentative d'amélioration : le deep Q-learning}
+    La métrique utilisée pour évaluer les différents modèles est le score présenté plus haut. Les temps d'entraînement de chaque modèle sont mesurés en secondes. 
+
+    \section{Première tentative d'amélioration du modèle : le deep Q-learning}
+
+    Dans la mesure où les hyperparamètres de notre modèle initial sont déjà optimisés, il paraît pertinent, pour améliorer les performances de notre IA, de changer de modèle. Dans cette optique, la première tentative d'amélioration choisie sera de remplacer notre modéle de Q-learning par un autre, le deep Q-learning.
     \subsubsection{Principe}
+
+    Le deep Q-learning, comme son nom l'indique, partage beaucoup de caractéristiques avec le Q-learning. Il existe cependant une différence de taille entre les deux : alors que le q-learning tient une Q-table qui associe explicitement des valeurs à des paires (état, action), le deep Q-learning utilise un DNN pour prédire les Q-values. C'est ce type de modèle qui a été utilisé avec succès par Deepmind pour créer des IA capables de jouer à des jeux Atari.
+
+
     \subsubsection{Implémentation}
+    Voici la structure du réseau utilisé dans notre implémentation de deep q-learning :
+    \begin{figure}[h]
+        \includegraphics[width=13cm]{structure_dnn}
+        \centering
+        \caption{Structure du réseau utilisé par le deep q-learning}
+        \centering
+    \end{figure}
+
+    Ici, notre réseau prédit la Q-value associée à chaque coup possible pour l'état donné en entrée du réseau.
+
+    Pour entraîner ce modèle, on garde un historique des coups joués appelé replay buffer. À intervalles réguliers, on réentraîne notre réseau comme suit :
+    \begin{enumerate}
+        \item on sélectionne aléatoirement des coups dans le buffer
+        \item pour chacun de ces coups, on réentraîne notre réseau. Pour obtenir le vecteur de sortie attendu en sortie de notre réseau, on réalise une inférence avec le réseau puis on remplace la dimension du vecteur correspondant au mouvement joué par la valeur calculée grâce à l'équation de Bellman.
+    \end{enumerate}
+
     \subsubsection{Résultats}
 
-    \section{Deuxième tentative d'amélioration : modification du modèle de Q-learning pour utiliser un learning rate variable}
+    Voici une comparaison des performances du q-learning et du deep q-learning, après optimisation du learning rate :
+    
+
+
+    \section{Deuxième tentative d'amélioration du modèle : modification du modèle de Q-learning pour utiliser un learning rate variable}
     \subsection{Principe}
     \subsection{Implémentation}
     \subsection{Résultats}

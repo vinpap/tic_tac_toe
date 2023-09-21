@@ -160,6 +160,6 @@ def finetune_deep_q_learning():
 
 
 #finetune_deep_q_learning()
-# plot_all_results()
+plot_all_results()
 #train_model(model="deep q-learning", games_count=5000, alpha=0.001, gamma=0.8, epsilon=0.5)
 
