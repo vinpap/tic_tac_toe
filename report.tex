@@ -41,9 +41,9 @@
 
     L'application de départ est bâtie autour de plusieurs composants :
     \begin{itemize}
-        \item Une classe qui implémente la logique des règles du jeu et gère l'exécution des parties
-        \item Une classe qui affiche une interface réalisée à l'aide du package Python PyGame. Celle-ci permet de visualiser en temps réel le déroulement des parties lorsque deux IA jouent ensemble, ou de jouer soi-même contre une IA
-        \item Un ensemble de classes qui héritent d'une interface commune nommée PlayerInterface qui leur permet d'interagir avec le système de jeu. Dans la logique du programme, ces classes représentent des joueurs (humains ou IA) que l'on peut faire jouer en les enregistrant auprès du système de jeu à l'aide d'un simple appel de méthode. Cette structure nous permet d'ajouter facilement de nouveaux modèles d'IA à notre application.
+        \item Une classe qui implémente la logique des règles du jeu et gère le déroulement des parties
+        \item Une classe qui affiche une interface graphique réalisée à l'aide du package Python PyGame. Celle-ci permet de visualiser en temps réel le déroulement des parties lorsque deux IA jouent ensemble, ou de jouer soi-même contre une IA
+        \item Un ensemble de classes qui héritent d'une classe d'interface commune nommée PlayerInterface qui leur permet d'interagir avec le système de jeu. Dans la logique du programme, ces classes représentent des joueurs (humains ou IA) que l'on peut faire jouer en les enregistrant auprès du système de jeu à l'aide d'un simple appel de méthode. Cette structure nous permet d'ajouter facilement de nouveaux modèles d'IA à notre application.
     \end{itemize}
 
     \begin{figure}[h]
@@ -54,25 +54,26 @@
     \end{figure}
 
     \subsection{Le modèle}
-    Le modèle initial pour ce projet est une implémentation du Q-learning, un modèle de renforcement sans modèle ("model-free reinforcement"). Commençons par parler du fonctionnement de ce modèle, et du renforcement de manière plus générale.
+    Le modèle initial pour ce projet est une implémentation du Q-learning, un modèle de renforcement dit "model-free". Commençons par parler du fonctionnement de ce modèle, et du renforcement de manière plus générale.
 
     \subsubsection{L'apprentissage par renforcement}
-    L'apprentissage par renforcement (abrégé RL pour "Reinforcement Learning" dans la suite de ce dossier) est l'un des grands paradigmes du machine learning. Avec cette méthode, le modèle est un agent qui cherche à optimiser une récompense quantitative au cours du temps à partir d'expériences dans un environnement donné. L'objectif d'un modèle de RL est d'ajuster son comportement, appelé politique ou stratégie. Pour mieux comprendre ces notions, voici à quoi correspondent ces différents concepts dans le cas qui nous intéresse :
+    L'apprentissage par renforcement (parfois abrégé RL pour "Reinforcement Learning" dans la suite de ce dossier) est l'un des grands paradigmes du machine learning. Avec cette méthode, le modèle est un agent qui cherche à optimiser une récompense quantitative au cours du temps à partir d'expériences dans un environnement donné. L'objectif d'un modèle de RL est d'ajuster son comportement, appelé politique ou stratégie. Pour mieux comprendre ces notions, voici à quoi correspondent ces différents concepts dans le cas qui nous intéresse :
     \begin{itemize}
         \item L'agent est notre modèle
         \item L'environnement est la configuration du plateau de jeu à un moment donné
         \item Une expérience est un coup joué 
-        \item La récompense est le résultat à la fin d'une partie (victoire, défaite ou nul). Dans le cas qui nous intéresse, on quantifie ce résultat en établissant qu'une victoire donne 1 point, un nul 0 et une défaite -1.
+        \item La récompense est le résultat à la fin d'une partie (victoire, défaite ou nul). Dans notre cas, on quantifie ce résultat en établissant qu'une victoire donne 1 point, un nul 0 et une défaite -1.
         \item La politique de notre modèle est la méthode qu'il utilise pour choisir un coup à jouer en fonction de l'état du plateau. La nature de cette politique varie selon les modèles, comme nous allons le voir.
     \end{itemize}
-    Enfin, on notera qu'il existe deux types de modèles de RL : certains sont model-free, c'est-à-dire que notre IA n'a aucune connaissance préalable de l'environnement ou des mécanismes qui s'y produisent. D'autres sont model-based, ce qui veut dire qu'ils comportent un certain niveau de connaissance de l'environnement. Tous les modèles qui seront présentés ici sont model-free. Dit autrement, cela veut dire que nos modèles n'ont aucune connaissance des règles du morpion !
+
+    Enfin, on notera qu'il existe deux types de modèles de RL : certains sont model-free, c'est-à-dire que notre IA n'a aucune connaissance préalable de l'environnement ou des mécanismes qui s'y produisent. D'autres sont model-based, ce qui veut dire qu'ils comportent un certain niveau de connaissance de l'environnement. Tous les modèles qui seront présentés ici sont model-free. Dit autrement, cela veut dire que nos modèles n'ont aucune connaissance des règles du morpion.
     
-    Remarque: les principes de base du renforcement peuvent être facilement compris dans la mesure où ils sont inspirés des phénomènes d'apprentissage chez l'Homme et l'animal (se référer notamment à la célèbre expérience du \href{https://journals.openedition.org/bibnum/604}{chien de Pavlov}). On fait parfois une analogie entre le RL et certains aspects de l'éducation des enfants. Donner une récompense à un enfant, c'est encourager son comportement. Lui donner une punition (ou "récompense négative") c'est le dissuader de le reproduire à nouveau.
+    Remarque: les principes de base du renforcement peuvent être facilement compris dans la mesure où ils sont inspirés des phénomènes d'apprentissage chez l'Homme et l'animal (se référer notamment à la célèbre expérience du \href{https://journals.openedition.org/bibnum/604}{chien de Pavlov}). On fait parfois une analogie entre le RL et certains aspects de l'éducation des enfants. Donner une récompense à un enfant, c'est encourager son comportement. Lui donner une punition (ou "récompense négative") c'est le dissuader de le reproduire.
 
     \subsubsection{Le Q-learning}
-    Le Q-learning est l'un des algorithmes de RL les plus connus. Il tire son nom du fait qu'il est basé sur une fonction $Q:S * A \rightarrow \mathbb{R}$ qui calcule la valeur d'une paire état/action, souvent appelée Q-value. Ici S est l'état de l'environnement à un instant donné, et A est une action possible dans cet état. Dit autrement, la Q-value définit la "qualité" d'une action à partir d'un état donné. Dans le cas du morpion :
+    Le Q-learning est l'un des algorithmes de RL les plus connus. Il tire son nom du fait qu'il est basé sur une fonction $Q:s * a \rightarrow \mathbb{R}$ qui calcule la valeur d'une paire état/action $(s, a)$, souvent appelée Q-value. Ici $s$ est l'état de l'environnement à un instant donné, et $a$ est une action possible dans cet état. Dit autrement, la Q-value définit la "qualité" d'une action à partir d'un état donné. Dans le cas du morpion :
     \begin{itemize}
-        \item l'état Q est un vecteur à 9 dimensions qui est une visualisation applatie du plateau à un moment donné. On représente les cases où l'IA a déjà joué par une valeur de 1, celles où son adversaire a joué par une valeur de -1, et les cases où personne n'a joué par une valeur de 0. À titre d'exemple, le plateau montré dans la figure 1 est représenté pour l'IA par le vecteur $\begin{bmatrix}0&0&0&-1&0&0&0&1&1\end{bmatrix}$.
+        \item l'état Q est un vecteur à 9 dimensions qui est une visualisation aplatie du plateau à un moment donné. On représente les cases où l'IA a déjà joué par une valeur de 1, celles où son adversaire a joué par une valeur de -1, et les cases où personne n'a joué par une valeur de 0. À titre d'exemple, le plateau montré dans la figure 1 est représenté pour l'IA par le vecteur $\begin{bmatrix}0&0&0&-1&0&0&0&1&1\end{bmatrix}$.
         \item on représentera également une action comme un vecteur à 9 dimensions. Cette fois-ci, ce vecteur sera une représentation du plateau après avoir joué.
     \end{itemize}
 
@@ -86,7 +87,7 @@
 
     Cette fonction est à la base de plusieurs algorithmes de RL. Elle donne la valeur optimale d'un état, sans se pencher sur une action spécifique. Regardons-la plus en détail :
     \begin{itemize}
-        \item $V(s)$ est un ŕéel qui donne la valeur d'un état s
+        \item $V(s)$ est un ŕéel qui donne la valeur d'un état $s$
         \item $s$ représente l'état
         \item $R(s, a)$ est la récompense immédiatement obtenue aprés avoir réalisé l'action $a$ dans l'état $s$
         \item $\gamma$ est le discount factor. C'est un paramètre de notre modèle compris entre 0 et 1 qui module l'impact de la valeur des états futurs potentiels sur les choix pris à un instant donné. Dit autrement, le modèle aura tendance à chercher des récompenses sur le long terme si l'on donne une valeur élevée à $\gamma$, et vice-versa
@@ -200,20 +201,79 @@
 
     \subsubsection{Résultats}
 
-    Voici une comparaison des performances du q-learning et du deep q-learning, après optimisation du learning rate :
+    Une comparaison des performances du q-learning et du deep q-learning après optimisation du learning rate est présentée est la figure 5.
     
+    \begin{figure}[h]
+        \includegraphics[width=12cm]{deep_q_learning_metrics}
+        \centering
+        \caption{Comparaison des scores du Q-learning et du deep Q-learning}
+        \centering
+    \end{figure}
 
+    On constate une légère amélioration des performances. Cependant il est possible de mieux faire !
 
     \section{Deuxième tentative d'amélioration du modèle : modification du modèle de Q-learning pour utiliser un learning rate variable}
+
     \subsection{Principe}
+
+    En observant la courbe qui décrit les performances du modèle d'origine, on remarque que le score fluctue beaucoup d'une phase de test à une autre, et modifier le learning rate n'a pas permis d'améliorer le score. Cependant, cette réflexion a engendré une nouvelle idée : Faire varier le learning rate durant l'entraînement permettrait-il d'améliorer les performances ? Intuitivement, on pourrait en effet penser que commencer l'entraînement avec un learning rate de 1 et le réduire progressivement pourrait permettre au modèle d'apprendre vite au début, puis d'ajuster ses q-values par petites touches par la suite.
+
+    Cette méthode est surprenamment simple à mettre en place. Reprenons la formule utilisée pour mettre à jour la Q-table dans le modèle d'origine :
+
+    {\centering $Q(s,a) := (1-\alpha)*Q(s,a) + \alpha(r + \gamma * max_a'(s',a')) $}
+
+    Notons que cette assignation ne correspond à rien d'autre que la moyenne de la Q-value existante et de la nouvelle valeur calculée pour le coup considéré, de coefficients $\alpha$ et $-\alpha$. Introduisons maintenant un entier positif $n$ qui désigne le nombre de fois qu'un couple (état, action) donné a été rencontré. Enregistrons et mettons à jour cette valeur pour chaque coup au fil de l'entraînement, puis remplaçons la formule précédente par celle-ci :
+    
+    {\centering $Q(s,a) := \frac{n*Q(s,a) \:+ \:r \:+ \:\gamma * max_a'(s',a')}{n\:+\:1}$}
+
+    ou, vu autrement, si on note $Q_n$ la Q-value d'une action jouée $n$ fois, la Q-value d'une action à un moment donné est caractérisé par $Q_n(s,a) = \overline{Q(s,a)}$.
+
     \subsection{Implémentation}
+
+    L'implémentation de cette modification est relativement rapide : il a suffi de modifier quelques lignes de code dans la fonction qui actualise la Q-table et de modifier le format de cette dernière pour qu'elle stocke, pour chaque paire état-action, le nombre de fois où cette configuration a déjà été rencontrée durant l'entraînement.
     \subsection{Résultats}
 
+    Voici les résultats obtenus avec cette méthode comparés à ceux des modèles précédents :
+
+
+    \begin{figure}[h]
+        \includegraphics[width=12cm]{improved_q_learning_metrics}
+        \centering
+        \caption{Comparaison du score du modèle de Q-learning modifié avec les modèles précédents}
+        \centering
+    \end{figure}
+
+    On remarque cette fois-ci une amélioration nette des résultats, avec un score supérieur à 90 en fin d'entraînement. Utiliser un learning rate variable était donc une bonne idée.
+    
     \section{Bilan et leçons à tirer}
     \subsection{Rétrospective sur la gestion de projet}
+
+    Voici un diagramme qui compare les charges de travail estimées au début de ce dossier et le temps réellement passé sur chacune des tâches du projet :
+
+    \begin{figure}[h]
+        \includegraphics[width=13cm]{gantt_2}
+        \centering
+        \caption{Comparaison entre l'estimation des charges initiale et le temps réellement passé sur les différentes tâches du projet}
+        \centering
+    \end{figure}
+
+    Si le temps passé sur les premières tâches du projet a bien été estimé, celui nécessaire pour implémenter et optimiser les différents modèles a été largement sous-estimé. Cela s'explique par plusieurs facteurs qui seront détaillés ci-dessous.
+
     \subsection{Les grandes difficultés rencontrées}
 
+    Comme nous venons de le dire, la première difficulté rencontrée concerne le temps de travail nécessaire pour travailler sur ce projet, largement supérieur à ce qui était initialement estimé. Ceci s'explique par deux facteurs :
+    \begin{itemize}
+        \item Les modèles de renforcement sont plus difficiles à mettre en place que les modèles d'apprentissage supervisé ou non supervisé. Alors qu'il est souvent possible de trouver des implémentations prêtes à l'emploi de ces derniers, l'implémentation d'un modèle de renforcement dépend en large partie du problème spécifique auquel ce dernier doit répondre. Par conséquent les modèles de renforcement présentés dans ce dossier ont dû être codés à partir de zéro, d'où un temps de travail plus long.
+        \item Les modèles de renforcement sont connus pour être longs à entraîner. C'est pour cette raison que l'optimisation des hyperparamètres a été si longue : chaque entraînement prenant plus de deux heures, plusieurs jours ont été nécessaires pour tout optimiser.
+    \end{itemize}
+
+    Une autre difficulté concernant ce projet est liée au fait même d'utiliser des modèles de machine learning pour résoudre un problème tel que celui-ci. Même si le modèle amélioré affiche des performances respectables, il n'en reste pas moins qu'il a fallu entraîner un modèle pendant plusieurs heures. Or, le jeu du morpion est un jeu où il existe un nombre de configurations de plateau possibles relativement limité, et certains algorithmes ne faisant pas appel au machine learning tels que le minimax peuvent déjà résoudre ce problème. On pourra donc discuter de la pertinence du machine learning pour résoudre ce problème en premier lieu.
+
     \section{Conclusion}
+
+    Au final, ce projet aura été l'occasion d'explorer un pan du machine learning peu abordé jusque-là dans le cadre de la formation. L'apprentissage par renforcement offre pourtant de nombreuses possibilités, dans le développement d'IA liées au jeu vidéo mais aussi en robotique, en vision par ordinateur ou dans le cadre du finetuning d'un LLM tel que GPT-3. 
+
+    L'application du RL à un problème simple tel que le morpion m'a permis de m'initier à ce paradigme et j'espère pouvoir bientôt exploiter toutes les possibilités du renforcement dans d'autres contextes.
 
     \section*{Bibliographie}
     \addcontentsline{toc}{section}{Bibliographie}
