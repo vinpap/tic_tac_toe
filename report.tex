@@ -7,6 +7,12 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue
+}
+
 \graphicspath{ {./img/} }
 \title{%
     \huge Apprendre à gagner au morpion grâce à l'apprentissage par renforcement  \\
@@ -37,7 +43,7 @@
 
     \section{Situation de départ}
     \subsection{L'application}
-    Tout d'abord, rappelons les règles du morpion. Deux joueurs s'affrontent sur une grille de 3x3 cases où ils vont, à tour de rôle, choisir une case à occuper (l'un d'entre eux tracera souvent des croix, et l'autre des cercles). L'objectif est de réussir à aligner trois de ses symboles à l'horizontale, à la verticale ou en diagonale, tout en empêchant son adversaire d'en faire autant. La partie s'arrête lorsque l'un des joueurs y parvient, ou si toute la grille est remplie (auquel cas la partie s'achève par un match nul). 
+    Tout d'abord, rappelons les règles du morpion. Deux joueurs s'affrontent sur une grille de 3x3 cases où ils choisissent une case à occuper à tour de rôle (l'un d'entre eux trace généralement des croix, et l'autre des cercles). L'objectif est de réussir à aligner trois de ses symboles à l'horizontale, à la verticale ou en diagonale, tout en empêchant son adversaire d'en faire autant. La partie s'arrête lorsque l'un des joueurs y parvient, ou si toute la grille est remplie (auquel cas la partie s'achève par un match nul). 
 
     L'application de départ est bâtie autour de plusieurs composants :
     \begin{itemize}
@@ -57,7 +63,7 @@
     Le modèle initial pour ce projet est une implémentation du Q-learning, un modèle de renforcement dit "model-free". Commençons par parler du fonctionnement de ce modèle, et du renforcement de manière plus générale.
 
     \subsubsection{L'apprentissage par renforcement}
-    L'apprentissage par renforcement (parfois abrégé RL pour "Reinforcement Learning" dans la suite de ce dossier) est l'un des grands paradigmes du machine learning. Avec cette méthode, le modèle est un agent qui cherche à optimiser une récompense quantitative au cours du temps à partir d'expériences dans un environnement donné. L'objectif d'un modèle de RL est d'ajuster son comportement, appelé politique ou stratégie. Pour mieux comprendre ces notions, voici à quoi correspondent ces différents concepts dans le cas qui nous intéresse :
+    L'apprentissage par renforcement (parfois abrégé RL pour "Reinforcement Learning" dans la suite de ce dossier) est l'un des grands paradigmes de l'apprentissage automatique. Avec cette méthode, le modèle est un agent qui cherche à optimiser une récompense quantitative au cours du temps à partir d'expériences dans un environnement donné. L'objectif d'un modèle de RL est d'ajuster son comportement, appelé politique ou stratégie. Pour mieux comprendre ces notions, voici à quoi correspondent ces différents concepts dans le cas qui nous intéresse :
     \begin{itemize}
         \item L'agent est notre modèle
         \item L'environnement est la configuration du plateau de jeu à un moment donné
@@ -80,11 +86,10 @@
     La Q-value de chaque action est stockée dans une table (appelée Q-table). Cette table constitue la politique du modèle de Q-learning, qui, pour faire un choix à un moment donné, choisira dans la table l'action qui présente la valeur la plus élevée pour l'état actuel.
 
     Une question centrale demeure : comment le modèle peut-il apprendre ces valeurs ? La réponse est apportée par l'équation de Bellman :
-
-
-    {\centering $V(s)=max_a(R(s,a)+ \gamma*V(s’))$}
+    \begin{align*} 
+        V(s)=max_a(R(s,a)+ \gamma*V(s’))
+    \end{align*}
     
-
     Cette fonction est à la base de plusieurs algorithmes de RL. Elle donne la valeur optimale d'un état, sans se pencher sur une action spécifique. Regardons-la plus en détail :
     \begin{itemize}
         \item $V(s)$ est un ŕéel qui donne la valeur d'un état $s$
@@ -106,8 +111,9 @@
         \item Puis on commence à jouer des parties contre un autre joueur (généralement une autre IA, pour pouvoir entraîner le modèle vite). À chaque tour, le modèle choisit soit de jouer le coup qui présente la Q-value la plus élevée, soit de jouer un coup au hasard. Ce choix représente le dilemne exploration vs exploitation et est conditionné par le paramètre $\epsilon$, deux éléments que nous aborderons plus après. 
         \item Au fil de la partie, le modèle garde en mémoire tous les coups qu'il a joués
         \item À la fin de la partie, il reçoit une récompense $r$ dont la valeur vaut -1, 1 ou 0. Il peut alors mettre à jour les Q-values stockées dans la table. Pour cela, il remonte l'historique des coups en partant de la fin et, assigne à chacun de ces coups une nouvelle Q-value comme suit :
-
-        {\centering $Q(s,a) := (1-\alpha)*Q(s,a) + \alpha(r + \gamma * max_a'(s',a')) $}
+        \begin{align*} 
+            Q(s,a) := (1-\alpha)*Q(s,a) + \alpha(r + \gamma * max_a'(s',a'))
+        \end{align*}
         où $max_a'(s',a')$ est la Q-value du coup disponible ayant la Q-value la plus élevée pour l'état suivant.
         
     \end{enumerate}
@@ -133,7 +139,11 @@
 
     \subsubsection{Performances de départ}
 
-    Dans le cadre de notre projet, les performances du modèle sont mesurées lors d'une phase de test où on fait jouer notre modèle 100 parties contre un bot qui choisit tous ses coups aléatoirement. Le score $s$ est obtenu comme suit : $s = victoires - defaites$ (les matchs nuls ne rapportent aucun point). Le modèle n'utilise pas le résultat de ces parties pour s'entraîner et choisira toujours de jouer les meilleurs coups connus (il ne cherchera donc pas à tenter de nouveaux coups). Cette phase de test est répétée régulièrement durant l'entraînement, en alternant 200 parties d'entraînement avec 100 parties de test.
+    Dans le cadre de notre projet, les performances du modèle sont mesurées lors d'une phase de test où on fait jouer notre modèle 100 parties contre un bot qui choisit tous ses coups aléatoirement. Le score $s$ est obtenu comme suit : 
+    \begin{align*} 
+        s = victoires - defaites
+    \end{align*} 
+    (les matchs nuls ne rapportent aucun point). Le modèle n'utilise pas le résultat de ces parties pour s'entraîner et choisira toujours de jouer les meilleurs coups connus (il ne cherchera donc pas à tenter de nouveaux coups). Cette phase de test est répétée régulièrement durant l'entraînement, en alternant 200 parties d'entraînement avec 100 parties de test.
     
     Voici les performances de notre modèle mesurées à différents points lors de l'entraînement, après avoir optimisé les hyperparamètres :
 
@@ -219,12 +229,14 @@
     En observant la courbe qui décrit les performances du modèle d'origine, on remarque que le score fluctue beaucoup d'une phase de test à une autre, et modifier le learning rate n'a pas permis d'améliorer le score. Cependant, cette réflexion a engendré une nouvelle idée : Faire varier le learning rate durant l'entraînement permettrait-il d'améliorer les performances ? Intuitivement, on pourrait en effet penser que commencer l'entraînement avec un learning rate de 1 et le réduire progressivement pourrait permettre au modèle d'apprendre vite au début, puis d'ajuster ses q-values par petites touches par la suite.
 
     Cette méthode est surprenamment simple à mettre en place. Reprenons la formule utilisée pour mettre à jour la Q-table dans le modèle d'origine :
-
-    {\centering $Q(s,a) := (1-\alpha)*Q(s,a) + \alpha(r + \gamma * max_a'(s',a')) $}
+    \begin{align*}
+        Q(s,a) := (1-\alpha)*Q(s,a) + \alpha(r + \gamma * max_a'(s',a'))
+    \end{align*}
 
     Notons que cette assignation ne correspond à rien d'autre que la moyenne de la Q-value existante et de la nouvelle valeur calculée pour le coup considéré, de coefficients $\alpha$ et $-\alpha$. Introduisons maintenant un entier positif $n$ qui désigne le nombre de fois qu'un couple (état, action) donné a été rencontré. Enregistrons et mettons à jour cette valeur pour chaque coup au fil de l'entraînement, puis remplaçons la formule précédente par celle-ci :
-    
-    {\centering $Q(s,a) := \frac{n*Q(s,a) \:+ \:r \:+ \:\gamma * max_a'(s',a')}{n\:+\:1}$}
+    \begin{align*}
+        Q(s,a) := \frac{n*Q(s,a) \:+ \:r \:+ \:\gamma * max_a'(s',a')}{n\:+\:1}
+    \end{align*}
 
     ou, vu autrement, si on note $Q_n$ la Q-value d'une action jouée $n$ fois, la Q-value d'une action à un moment donné est caractérisé par $Q_n(s,a) = \overline{Q(s,a)}$.
 
