@@ -50,4 +50,3 @@ games_played = 0
 t1 = time()
 while game_system.play_a_game((3, 3)) and games_played < games_count-1:
     games_played += 1
-print(f"training time: {time()-t1} s")

@@ -63,7 +63,7 @@
     Le modèle initial pour ce projet est une implémentation du \textbf{Q-learning}, un modèle de renforcement dit "model-free". Commençons par parler du fonctionnement de ce modèle, et du renforcement de manière plus générale.
 
     \subsubsection{L'apprentissage par renforcement}
-    L'apprentissage par renforcement (parfois abrégé RL pour "Reinforcement Learning" dans la suite de ce dossier) est l'un des grands paradigmes de l'apprentissage automatique. Avec cette méthode, le modèle est un agent qui cherche à optimiser une récompense quantitative au cours du temps à partir d'expériences dans un environnement donné. L'objectif d'un modèle de RL est d'ajuster son comportement, appelé politique ou stratégie. Pour mieux comprendre ces notions, voici à quoi correspondent ces différents concepts dans le cas qui nous intéresse :
+    L'apprentissage par renforcement \cite{RL survey}(parfois abrégé RL pour "Reinforcement Learning" dans la suite de ce dossier) est l'un des grands paradigmes de l'apprentissage automatique. Avec cette méthode, le modèle est un agent qui cherche à optimiser une récompense quantitative au cours du temps à partir d'expériences dans un environnement donné. L'objectif d'un modèle de RL est d'ajuster son comportement, appelé politique ou stratégie. Pour mieux comprendre ces notions, voici à quoi correspondent ces différents concepts dans le cas qui nous intéresse :
     \begin{itemize}
         \item L'agent est notre modèle
         \item L'environnement est la configuration du plateau de jeu à un moment donné
@@ -74,10 +74,10 @@
 
     Enfin, on notera qu'il existe deux types de modèles de RL : certains sont model-free, c'est-à-dire que notre IA n'a aucune connaissance préalable de l'environnement ou des mécanismes qui s'y produisent. D'autres sont model-based, ce qui veut dire qu'ils comportent un certain niveau de connaissance de l'environnement. Tous les modèles qui seront présentés ici sont model-free. Dit autrement, cela veut dire que \textbf{nos modèles n'ont aucune connaissance des règles du morpion}.
     
-    \textbf{Remarque}: les principes de base du renforcement peuvent être facilement compris dans la mesure où ils sont inspirés des phénomènes d'apprentissage chez l'Homme et l'animal (se référer notamment à la célèbre expérience du \href{https://journals.openedition.org/bibnum/604}{chien de Pavlov}). On fait parfois une analogie entre le RL et certains aspects de l'éducation des enfants. Donner une récompense à un enfant, c'est encourager son comportement. Lui donner une punition (ou "récompense négative") c'est le dissuader de le reproduire.
+    \textbf{Remarque}: les principes de base du renforcement peuvent être facilement compris dans la mesure où ils sont inspirés des phénomènes d'apprentissage chez l'Homme et l'animal (se référer notamment à la célèbre expérience du chien de Pavlov \cite{pavlov}. On fait parfois une analogie entre le RL et certains aspects de l'éducation des enfants. Donner une récompense à un enfant, c'est encourager son comportement. Lui donner une punition (ou "récompense négative") c'est le dissuader de le reproduire.
 
     \subsubsection{Le Q-learning}
-    Le Q-learning est l'un des algorithmes de RL les plus connus. Il tire son nom du fait qu'il est basé sur une fonction $Q:s * a \rightarrow \mathbb{R}$ qui calcule la valeur d'une paire état/action $(s, a)$, souvent appelée Q-value. Ici $s$ est l'état de l'environnement à un instant donné, et $a$ est une action possible dans cet état. Dit autrement, la Q-value définit la "qualité" d'une action à partir d'un état donné. Dans le cas du morpion :
+    Le Q-learning \cite{Q-learning} est l'un des algorithmes de RL les plus connus. Il tire son nom du fait qu'il est basé sur une fonction $Q:s * a \rightarrow \mathbb{R}$ qui calcule la valeur d'une paire état/action $(s, a)$, souvent appelée Q-value. Ici $s$ est l'état de l'environnement à un instant donné, et $a$ est une action possible dans cet état. Dit autrement, la Q-value définit la "qualité" d'une action à partir d'un état donné. Dans le cas du morpion :
     \begin{itemize}
         \item l'état Q est un vecteur à 9 dimensions qui est une visualisation aplatie du plateau à un moment donné. On représente les cases où l'IA a déjà joué par une valeur de 1, celles où son adversaire a joué par une valeur de -1, et les cases où personne n'a joué par une valeur de 0. À titre d'exemple, le plateau montré dans la figure 1 est représenté pour l'IA par le vecteur $\begin{bmatrix}0&0&0&-1&0&0&0&1&1\end{bmatrix}$.
         \item on représentera également une action comme un vecteur à 9 dimensions. Cette fois-ci, ce vecteur sera une représentation du plateau après avoir joué.
@@ -120,7 +120,7 @@
         
     \end{enumerate}
 
-    Plus haut nous avons évoqué le dilemne exploration vs exploitation. Cette notion renvoit à un choix que tout modèle de renforcement doit faire lors de ses inférences : faut-il jouer le meilleur coup connu (i.e. exploiter ce que l'on sait déjà faire) ou tenter un nouveau coup aléatoire (et donc explorer d'autres possibilités) ? Ce choix est réalisé dans les modèles présentés dans ce dossier à l'aide de l'algorithme du \textbf{epsilon-greedy}. Celui-ci est très simple :
+    Plus haut nous avons évoqué le dilemne exploration vs exploitation. Cette notion renvoit à un choix que tout modèle de renforcement doit faire lors de ses inférences : faut-il jouer le meilleur coup connu (i.e. exploiter ce que l'on sait déjà faire) ou tenter un nouveau coup aléatoire (et donc explorer d'autres possibilités) ? Ce choix est réalisé dans les modèles présentés dans ce dossier à l'aide de l'algorithme du \textbf{epsilon-greedy} \cite{epsilon-greedy}. Celui-ci est très simple :
     \begin{itemize}
         \item À chaque inférence, le modèle choisit aléatoirement un réel entre 0 et 1
         \item Si ce nombre est supérieur à un paramètre $\epsilon$ fixé, alors on joue le meilleur coup connu
@@ -147,7 +147,7 @@
     \end{align*} 
     (les matchs nuls ne rapportent aucun point). Le modèle n'utilise pas le résultat de ces parties pour s'entraîner et choisira toujours de jouer les meilleurs coups connus (il ne cherchera donc pas à tenter de nouveaux coups). Cette phase de test est répétée régulièrement durant l'entraînement, en alternant 200 parties d'entraînement avec 100 parties de test.
     
-    Voici les performances de notre modèle mesurées à différents points lors de l'entraînement, après avoir optimisé les hyperparamètres :
+    Les performances de notre modèle mesurées à différents points lors de l'entraînement, après avoir optimisé les hyperparamètres, sont présentées dans la figure 2.
 
     \begin{figure}[h]
         \includegraphics[width=12cm]{q_learning_metrics}
@@ -162,7 +162,7 @@
 
     Afin de produire du code robuste et de vérifier la qualité du code produit, ce projet a été mené selon la méthode du Test-Driven Development. Dans le contexte de ce projet, cela consiste à coder les tests unitaires qui vérifient les performances et le bon fonctionnement des modèles produits avant de coder les modèles eux-mêmes.
     
-    Voici un diagramme de Gantt qui présente l'estimation des charges réalisée en amont du projet :
+    La figure 3 montre un diagramme de Gantt qui présente l'estimation des charges réalisée en amont du projet.
 
     \begin{figure}[h]
         \includegraphics[width=13cm]{gantt}
@@ -191,7 +191,7 @@
     Dans la mesure où les hyperparamètres de notre modèle initial sont déjà optimisés, il paraît pertinent, pour améliorer les performances de notre IA, de changer de modèle. Dans cette optique, la première tentative d'amélioration choisie sera de remplacer notre modéle de Q-learning par un autre, le \textbf{deep Q-learning}.
     \subsubsection{Principe}
 
-    Le deep Q-learning, comme son nom l'indique, partage beaucoup de caractéristiques avec le Q-learning. Il existe cependant une différence de taille entre les deux : alors que le q-learning tient une Q-table qui associe explicitement des valeurs à des paires (état, action), le deep Q-learning utilise un DNN pour prédire les Q-values. C'est ce type de modèle qui a été utilisé avec succès par Deepmind pour créer des IA capables de jouer à des jeux Atari.
+    Le deep Q-learning \cite{deep Q-learning}, comme son nom l'indique, partage beaucoup de caractéristiques avec le Q-learning. Il existe cependant une différence de taille entre les deux : alors que le q-learning tient une Q-table qui associe explicitement des valeurs à des paires (état, action), le deep Q-learning utilise un DNN pour prédire les Q-values. C'est ce type de modèle qui a été utilisé avec succès par Deepmind pour créer des IA capables de jouer à des jeux Atari \cite{deepmind}.
 
 
     \subsubsection{Implémentation}
@@ -245,9 +245,6 @@
     L'implémentation de cette modification est relativement rapide : il a suffi de modifier quelques lignes de code dans la fonction qui actualise la Q-table et de modifier le format de cette dernière pour qu'elle stocke, pour chaque paire état-action, le nombre de fois où cette configuration a déjà été rencontrée durant l'entraînement.
     \subsection{Résultats}
 
-    Voici les résultats obtenus avec cette méthode comparés à ceux des modèles précédents :
-
-
     \begin{figure}[h]
         \includegraphics[width=12cm]{improved_q_learning_metrics}
         \centering
@@ -255,12 +252,10 @@
         \centering
     \end{figure}
 
-    On remarque cette fois-ci une amélioration nette des résultats, avec un score supérieur à 90 en fin d'entraînement. Utiliser un learning rate variable était donc une bonne idée.
+    Les résultats obtenus après modifications sont présentés sur la figure 6. On remarque cette fois-ci une amélioration nette des résultats, avec un score supérieur à 90 en fin d'entraînement. Utiliser un learning rate variable était donc une bonne idée.
     
     \section{Bilan et leçons à tirer}
     \subsection{Rétrospective sur la gestion de projet}
-
-    Voici un diagramme qui compare les charges de travail estimées au début de ce dossier et le temps réellement passé sur chacune des tâches du projet :
 
     \begin{figure}[h]
         \includegraphics[width=13cm]{gantt_2}
@@ -269,7 +264,7 @@
         \centering
     \end{figure}
 
-    Si le temps passé sur les premières tâches du projet a bien été estimé, celui nécessaire pour implémenter et optimiser les différents modèles a été largement sous-estimé. Cela s'explique par plusieurs facteurs qui seront détaillés ci-dessous.
+    La figure 7 présente un diagramme qui compare les charges de travail estimées au début de ce dossier et le temps réellement passé sur chacune des tâches du projet. Si le temps passé sur les premières tâches du projet a bien été estimé, celui nécessaire pour implémenter et optimiser les différents modèles a été largement sous-estimé. Cela s'explique par plusieurs facteurs qui seront détaillés ci-dessous.
 
     \subsection{Les grandes difficultés rencontrées}
 
@@ -283,11 +278,33 @@
 
     \section{Conclusion}
 
-    Au final, ce projet aura été l'occasion d'explorer un pan du machine learning peu abordé jusque-là dans le cadre de la formation. L'apprentissage par renforcement offre pourtant de nombreuses possibilités, dans le développement d'IA liées au jeu vidéo mais aussi en robotique, en vision par ordinateur ou dans le cadre du finetuning d'un LLM tel que GPT-3. 
+    Au final, ce projet aura été l'occasion d'explorer un pan du machine learning peu abordé jusque-là dans le cadre de la formation. L'apprentissage par renforcement offre pourtant de nombreuses possibilités, dans le développement d'IA liées au jeu vidéo mais aussi en robotique, en vision par ordinateur ou dans le cadre du finetuning d'un LLM tel que GPT-3 \cite{RL_LLM}. 
 
     L'application du RL à un problème simple tel que le morpion m'a permis de m'initier à ce paradigme et j'espère pouvoir bientôt exploiter toutes les possibilités du renforcement dans d'autres contextes.
 
-    \section*{Bibliographie}
-    \addcontentsline{toc}{section}{Bibliographie}
+    \addcontentsline{toc}{section}{Références}
+    \begin{thebibliography}{9}
+    
+    \bibitem{RL survey}
+    L.P. Kaelbling, M.L. Littman, A.W. Moore - \emph{Reinforcement Learning: A Survey}, Journal of Artificial Intelligence Research, Vol. 4 (1996)
+    
+    \bibitem{pavlov}
+    Ivan Pavlov - \emph{Le réflexe conditionnel}, Œuvres choisies, dir. Kh. Kochtoïanz, Ėditions en langues étrangères, Moscou (1954), reprise et traduction d’un article de Pavlov dans la Grande Encyclopédie médicale (1934)
+    
+    \bibitem{Q-learning}
+    B. Jang, M. Kim, G. Harerimana, J.W. Kim - \emph{Q-Learning Algorithms: A Comprehensive Classification and Applications}, Institute of Electrical and Electronics Engineers (2019)
+
+    \bibitem{epsilon-greedy}
+    Sutton, R.S. and Barto, A.G. - \emph{Reinforcement learning: an introduction}, Cambridge, MA: MIT Press (1998)
+
+    \bibitem{deep Q-learning}
+    V. Francois-Lavet, P. Henderson, R. Islam, M.G. Bellemare, J. Pineau - \emph{An Introduction to Deep Reinforcement Learning"}, Foundations and Trends in Machine Learning. 11 (3–4): 219–354 (2018)
+
+    \bibitem{deepmind}
+    Google DeepMind - \emph{Deep Reinforcement Learning}, https://www.deepmind.com/blog/deep-reinforcement-learning (2016)
+
+    \bibitem{RL_LLM}
+    D. Bill, T. Eriksson - \emph{Fine-tuning a LLM using Reinforcement Learning from Human Feedback for a Therapy Chatbot Application}, KTH Royal Institute of Technology (2023)
+    \end{thebibliography}
 
 \end{document}
