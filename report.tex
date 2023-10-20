@@ -60,7 +60,7 @@
     \end{figure}
 
     \subsection{Le modèle}
-    Le modèle initial pour ce projet est une implémentation du Q-learning, un modèle de renforcement dit "model-free". Commençons par parler du fonctionnement de ce modèle, et du renforcement de manière plus générale.
+    Le modèle initial pour ce projet est une implémentation du \textbf{Q-learning}, un modèle de renforcement dit "model-free". Commençons par parler du fonctionnement de ce modèle, et du renforcement de manière plus générale.
 
     \subsubsection{L'apprentissage par renforcement}
     L'apprentissage par renforcement (parfois abrégé RL pour "Reinforcement Learning" dans la suite de ce dossier) est l'un des grands paradigmes de l'apprentissage automatique. Avec cette méthode, le modèle est un agent qui cherche à optimiser une récompense quantitative au cours du temps à partir d'expériences dans un environnement donné. L'objectif d'un modèle de RL est d'ajuster son comportement, appelé politique ou stratégie. Pour mieux comprendre ces notions, voici à quoi correspondent ces différents concepts dans le cas qui nous intéresse :
@@ -72,9 +72,9 @@
         \item La politique de notre modèle est la méthode qu'il utilise pour choisir un coup à jouer en fonction de l'état du plateau. La nature de cette politique varie selon les modèles, comme nous allons le voir.
     \end{itemize}
 
-    Enfin, on notera qu'il existe deux types de modèles de RL : certains sont model-free, c'est-à-dire que notre IA n'a aucune connaissance préalable de l'environnement ou des mécanismes qui s'y produisent. D'autres sont model-based, ce qui veut dire qu'ils comportent un certain niveau de connaissance de l'environnement. Tous les modèles qui seront présentés ici sont model-free. Dit autrement, cela veut dire que nos modèles n'ont aucune connaissance des règles du morpion.
+    Enfin, on notera qu'il existe deux types de modèles de RL : certains sont model-free, c'est-à-dire que notre IA n'a aucune connaissance préalable de l'environnement ou des mécanismes qui s'y produisent. D'autres sont model-based, ce qui veut dire qu'ils comportent un certain niveau de connaissance de l'environnement. Tous les modèles qui seront présentés ici sont model-free. Dit autrement, cela veut dire que \textbf{nos modèles n'ont aucune connaissance des règles du morpion}.
     
-    Remarque: les principes de base du renforcement peuvent être facilement compris dans la mesure où ils sont inspirés des phénomènes d'apprentissage chez l'Homme et l'animal (se référer notamment à la célèbre expérience du \href{https://journals.openedition.org/bibnum/604}{chien de Pavlov}). On fait parfois une analogie entre le RL et certains aspects de l'éducation des enfants. Donner une récompense à un enfant, c'est encourager son comportement. Lui donner une punition (ou "récompense négative") c'est le dissuader de le reproduire.
+    \textbf{Remarque}: les principes de base du renforcement peuvent être facilement compris dans la mesure où ils sont inspirés des phénomènes d'apprentissage chez l'Homme et l'animal (se référer notamment à la célèbre expérience du \href{https://journals.openedition.org/bibnum/604}{chien de Pavlov}). On fait parfois une analogie entre le RL et certains aspects de l'éducation des enfants. Donner une récompense à un enfant, c'est encourager son comportement. Lui donner une punition (ou "récompense négative") c'est le dissuader de le reproduire.
 
     \subsubsection{Le Q-learning}
     Le Q-learning est l'un des algorithmes de RL les plus connus. Il tire son nom du fait qu'il est basé sur une fonction $Q:s * a \rightarrow \mathbb{R}$ qui calcule la valeur d'une paire état/action $(s, a)$, souvent appelée Q-value. Ici $s$ est l'état de l'environnement à un instant donné, et $a$ est une action possible dans cet état. Dit autrement, la Q-value définit la "qualité" d'une action à partir d'un état donné. Dans le cas du morpion :
@@ -85,7 +85,7 @@
 
     La Q-value de chaque action est stockée dans une table (appelée Q-table). Cette table constitue la politique du modèle de Q-learning, qui, pour faire un choix à un moment donné, choisira dans la table l'action qui présente la valeur la plus élevée pour l'état actuel.
 
-    Une question centrale demeure : comment le modèle peut-il apprendre ces valeurs ? La réponse est apportée par l'équation de Bellman :
+    Une question centrale demeure : comment le modèle peut-il apprendre ces valeurs ? La réponse est apportée par \textbf{l'équation de Bellman} :
     \begin{align*} 
         V(s)=max_a(R(s,a)+ \gamma*V(s’))
     \end{align*}
@@ -95,20 +95,22 @@
         \item $V(s)$ est un ŕéel qui donne la valeur d'un état $s$
         \item $s$ représente l'état
         \item $R(s, a)$ est la récompense immédiatement obtenue aprés avoir réalisé l'action $a$ dans l'état $s$
-        \item $\gamma$ est le discount factor. C'est un paramètre de notre modèle compris entre 0 et 1 qui module l'impact de la valeur des états futurs potentiels sur les choix pris à un instant donné. Dit autrement, le modèle aura tendance à chercher des récompenses sur le long terme si l'on donne une valeur élevée à $\gamma$, et vice-versa
+        \item $\gamma$ est le \textbf{discount factor}. C'est un paramètre de notre modèle compris entre 0 et 1 qui module l'impact de la valeur des états futurs potentiels sur les choix pris à un instant donné. Dit autrement, le modèle aura tendance à chercher des récompenses sur le long terme si l'on donne une valeur élevée à $\gamma$, et vice-versa
         \item $s'$ est l'état que le modèle atteindrait après avoir réalisé l'action s.
     \end{itemize}
     On pourrait verbaliser cette équation ainsi :
-
-    {\centering \textbf{L'action optimale pour un état donné est celle qui maximise la somme de la récompense immédiate associée et de la valeur de l'état suivant pondérée par un facteur $\gamma$}}
+    \begin{center} 
+        {\textbf{L'action optimale pour un état donné est celle qui maximise la somme de la récompense immédiate associée et de la valeur de l'état suivant pondérée par un facteur $\gamma$}}
+    \end{center}
+    
     
 
-    Remarque : il est tout à fait possible que certaines actions n'engendrent aucune récompense immédiate. Nous sommes dans ce cas : lors d'une partie de morpion, seul le dernier coup donne lieu à une récompense. C'est pour cette raison que la notion de "récompense immédiate" est absente des formules qui arrivent ci-dessous.
+    \textbf{Remarque} : il est tout à fait possible que certaines actions n'engendrent aucune récompense immédiate. Nous sommes dans ce cas : lors d'une partie de morpion, seul le dernier coup donne lieu à une récompense. C'est pour cette raison que la notion de "récompense immédiate" est absente des formules qui arrivent ci-dessous.
     
     On peut dériver l'algorithme du Q-learning de la notion de Q-value et de l'équation de Bellman. Celui-ci reste relativement simple :
     \begin{enumerate}
         \item Au début de l'entraînement, créer une Q-table qui contient toutes les actions possibles pour chaque état, et la remplir de valeurs arbitraires (0,5 dans mon cas)
-        \item Puis on commence à jouer des parties contre un autre joueur (généralement une autre IA, pour pouvoir entraîner le modèle vite). À chaque tour, le modèle choisit soit de jouer le coup qui présente la Q-value la plus élevée, soit de jouer un coup au hasard. Ce choix représente le dilemne exploration vs exploitation et est conditionné par le paramètre $\epsilon$, deux éléments que nous aborderons plus après. 
+        \item Puis on commence à jouer des parties contre un autre joueur (généralement une autre IA, pour pouvoir entraîner le modèle vite). À chaque tour, le modèle choisit soit de jouer le coup qui présente la Q-value la plus élevée, soit de jouer un coup au hasard. Ce choix représente le dilemne \textbf{exploration vs exploitation} et est conditionné par le paramètre $\epsilon$, deux éléments que nous aborderons plus après. 
         \item Au fil de la partie, le modèle garde en mémoire tous les coups qu'il a joués
         \item À la fin de la partie, il reçoit une récompense $r$ dont la valeur vaut -1, 1 ou 0. Il peut alors mettre à jour les Q-values stockées dans la table. Pour cela, il remonte l'historique des coups en partant de la fin et, assigne à chacun de ces coups une nouvelle Q-value comme suit :
         \begin{align*} 
@@ -118,7 +120,7 @@
         
     \end{enumerate}
 
-    Plus haut nous avons évoqué le dilemne exploration vs exploitation. Cette notion renvoit à un choix que tout modèle de renforcement doit faire lors de ses inférences : faut-il jouer le meilleur coup connu (i.e. exploiter ce que l'on sait déjà faire) ou tenter un nouveau coup aléatoire (et donc explorer d'autres possibilités) ? Ce choix est réalisé dans les modèles présentés dans ce dossier à l'aide de l'algorithme du epsilon-greedy. Celui-ci est très simple :
+    Plus haut nous avons évoqué le dilemne exploration vs exploitation. Cette notion renvoit à un choix que tout modèle de renforcement doit faire lors de ses inférences : faut-il jouer le meilleur coup connu (i.e. exploiter ce que l'on sait déjà faire) ou tenter un nouveau coup aléatoire (et donc explorer d'autres possibilités) ? Ce choix est réalisé dans les modèles présentés dans ce dossier à l'aide de l'algorithme du \textbf{epsilon-greedy}. Celui-ci est très simple :
     \begin{itemize}
         \item À chaque inférence, le modèle choisit aléatoirement un réel entre 0 et 1
         \item Si ce nombre est supérieur à un paramètre $\epsilon$ fixé, alors on joue le meilleur coup connu
@@ -173,12 +175,12 @@
 
     Les outils utilisés pour ce projet sont les suivants :
     \begin{itemize}
-        \item numpy
-        \item keras
-        \item pyGame pour l'interface
-        \item pytest pour les tests unitaires
-        \item GitHub pour le versionnement de code et la gestion des tâches
-        \item \LaTeX pour la rédaction de ce rapport.
+        \item \textbf{numpy}
+        \item \textbf{keras}
+        \item \textbf{pyGame} pour l'interface
+        \item \textbf{pytest} pour les tests unitaires
+        \item \textbf{GitHub} pour le versionnement de code et la gestion des tâches
+        \item \textbf{\LaTeX} pour la rédaction de ce rapport.
     \end{itemize}
     \subsubsection{Métriques}
 
@@ -186,14 +188,14 @@
 
     \section{Première tentative d'amélioration du modèle : le deep Q-learning}
 
-    Dans la mesure où les hyperparamètres de notre modèle initial sont déjà optimisés, il paraît pertinent, pour améliorer les performances de notre IA, de changer de modèle. Dans cette optique, la première tentative d'amélioration choisie sera de remplacer notre modéle de Q-learning par un autre, le deep Q-learning.
+    Dans la mesure où les hyperparamètres de notre modèle initial sont déjà optimisés, il paraît pertinent, pour améliorer les performances de notre IA, de changer de modèle. Dans cette optique, la première tentative d'amélioration choisie sera de remplacer notre modéle de Q-learning par un autre, le \textbf{deep Q-learning}.
     \subsubsection{Principe}
 
     Le deep Q-learning, comme son nom l'indique, partage beaucoup de caractéristiques avec le Q-learning. Il existe cependant une différence de taille entre les deux : alors que le q-learning tient une Q-table qui associe explicitement des valeurs à des paires (état, action), le deep Q-learning utilise un DNN pour prédire les Q-values. C'est ce type de modèle qui a été utilisé avec succès par Deepmind pour créer des IA capables de jouer à des jeux Atari.
 
 
     \subsubsection{Implémentation}
-    Voici la structure du réseau utilisé dans notre implémentation de deep q-learning :
+    La figure 4 présente la structure du réseau utilisé dans notre implémentation de deep q-learning. Ici, notre réseau prédit la Q-value associée à chaque coup possible pour l'état donné en entrée du réseau.
     \begin{figure}[h]
         \includegraphics[width=13cm]{structure_dnn}
         \centering
@@ -201,9 +203,9 @@
         \centering
     \end{figure}
 
-    Ici, notre réseau prédit la Q-value associée à chaque coup possible pour l'état donné en entrée du réseau.
+    
 
-    Pour entraîner ce modèle, on garde un historique des coups joués appelé replay buffer. À intervalles réguliers, on réentraîne notre réseau comme suit :
+    Pour entraîner ce modèle, on garde un historique des coups joués appelé \textbf{replay buffer}. À intervalles réguliers, on réentraîne notre réseau comme suit :
     \begin{enumerate}
         \item on sélectionne aléatoirement des coups dans le buffer
         \item pour chacun de ces coups, on réentraîne notre réseau. Pour obtenir le vecteur de sortie attendu en sortie de notre réseau, on réalise une inférence avec le réseau puis on remplace la dimension du vecteur correspondant au mouvement joué par la valeur calculée grâce à l'équation de Bellman.
@@ -211,7 +213,7 @@
 
     \subsubsection{Résultats}
 
-    Une comparaison des performances du q-learning et du deep q-learning après optimisation du learning rate est présentée est la figure 5.
+    Une comparaison des performances du q-learning et du deep q-learning après optimisation du learning rate est présentée sur la figure 5. On constate une légère amélioration des performances. Cependant il est possible de mieux faire !
     
     \begin{figure}[h]
         \includegraphics[width=12cm]{deep_q_learning_metrics}
@@ -220,13 +222,11 @@
         \centering
     \end{figure}
 
-    On constate une légère amélioration des performances. Cependant il est possible de mieux faire !
-
     \section{Deuxième tentative d'amélioration du modèle : modification du modèle de Q-learning pour utiliser un learning rate variable}
 
     \subsection{Principe}
 
-    En observant la courbe qui décrit les performances du modèle d'origine, on remarque que le score fluctue beaucoup d'une phase de test à une autre, et modifier le learning rate n'a pas permis d'améliorer le score. Cependant, cette réflexion a engendré une nouvelle idée : Faire varier le learning rate durant l'entraînement permettrait-il d'améliorer les performances ? Intuitivement, on pourrait en effet penser que commencer l'entraînement avec un learning rate de 1 et le réduire progressivement pourrait permettre au modèle d'apprendre vite au début, puis d'ajuster ses q-values par petites touches par la suite.
+    En observant la courbe qui décrit les performances du modèle d'origine, on remarque que le score fluctue beaucoup d'une phase de test à une autre, et modifier le learning rate n'a pas permis d'améliorer le score. Cependant, cette réflexion a engendré une nouvelle idée : \textbf{faire varier le learning rate durant l'entraînement permettrait-il d'améliorer les performances ?} Intuitivement, on pourrait en effet penser que commencer l'entraînement avec un learning rate de 1 et le réduire progressivement pourrait permettre au modèle d'apprendre vite au début, puis d'ajuster ses q-values par petites touches par la suite.
 
     Cette méthode est surprenamment simple à mettre en place. Reprenons la formule utilisée pour mettre à jour la Q-table dans le modèle d'origine :
     \begin{align*}
