@@ -81,6 +81,7 @@ class Graphics(Graphics_interface):
 
             pygame.display.flip()
 
+
     def draw_grid(self, current_board):
         self.current_board = current_board
         space_width = round(
@@ -125,6 +126,18 @@ class Graphics(Graphics_interface):
                 pygame.draw.circle(
                     self.screen, (255, 0, 0), pos, 0.45 * space_height, 5
                 )
+
+    def draw_model_selection_buttons(self, current_model="q-learning"):
+        """
+        Draws the model selection buttons on the right side of the screen and highlights
+        the button corresponding to the active model.
+
+        Available values for 'current_model': 
+        - 'q-learning'(default)
+        - 'deep q-learning'
+        - 'improved q-learning'
+        """
+        pass
 
     def display_scores(self):
         p1_title = "Player 1"
